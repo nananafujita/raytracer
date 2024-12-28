@@ -6,6 +6,11 @@
 #define WIDTH 1280
 #define HEIGHT 960
 
+void error_callback(int error, const char* description) {
+    printf("GLFW Error %d: %s\n", error, description);
+    fflush(stdout);
+}
+
 void display()
 {
     double origin[3] = {0, 0, 0};

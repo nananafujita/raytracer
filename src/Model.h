@@ -12,7 +12,7 @@ public:
     bool loadOBJ();
 private:
     bool addFace(std::vector<int>& faceVertexIndices, std::vector<Vec3>& vertices, std::vector<int>& faceNormalIndices, std::vector<Vec3>& normals);
-    bool findTriangle(std::vector<int>& faceVertexIndices, std::vector<Vec3>& vertices, std::vector<int>& faceNormalIndices, std::vector<Vec3>& normals, Triangle& t);
+    bool Model::findTriangle(std::vector<int>& faceVertexIndices, std::vector<Vec3>& vertices, int indices[3], Vec3& normal, Triangle& t); 
     char* filename;
 
     std::vector<Triangle> triangles;

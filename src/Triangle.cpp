@@ -1,12 +1,12 @@
 #include "Triangle.h"
 
 Triangle::Triangle()
-: v0(-1), v1(-1), v2(-1), n0(-1), n1(-1), n2(-1)
+: v0(-1), v1(-1), v2(-1), vertexNormals(false)
 {
 }
 
-Triangle::Triangle(int v0_, int v1_, int v2_, int n0_, int n1_, int n2_)
-: v0(v0_), v1(v1_), v2(v2_), n0(n0_), n1(n1_), n2(n2_)
+Triangle::Triangle(int v0_, int v1_, int v2_, bool vn)
+: v0(v0_), v1(v1_), v2(v2_), vertexNormals(vn)
 {
 }
 

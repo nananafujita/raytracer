@@ -93,9 +93,19 @@ bool Model::addFace(std::vector<int>& faceVertexIndices, std::vector<Vec3>& vert
     int attempts = 0;
     while (faceVertexIndices.size() > 3 && attempts <= faceVertexIndices.size()) {
         attempts++;
+        Vec3 normal = Vec3::origin;
         Triangle t;
-        if (findTriangle(faceVertexIndices, vertices, faceNormalIndices, normals, t)) {
-           attempts = 0;
+        int indices[3] = {-1, -1, -1};
+        if (findTriangle(faceVertexIndices, vertices, indices, normal, t)) {
+            if (!faceNormalIndices.empty()) {
+                t = Triangle(indices[0], indices[1], indices[2], true);
+            } else {
+                t = Triangle(indices[0], indices[1], indices[2], false);
+            }
+            triangles.push_back(t);
+            faceNormals.push_back(normal);
+
+            attempts = 0;
         }
     }
     if (faceVertexIndices.size() == 3) {
@@ -104,10 +114,12 @@ bool Model::addFace(std::vector<int>& faceVertexIndices, std::vector<Vec3>& vert
     if (attempts > faceVertexIndices.size()) {
         printf("Error: failed to find valid triangle, too many attempts.");
         return false;
+    } else {
+        return true;
     }
 } 
 
-bool Model::findTriangle(std::vector<int>& faceVertexIndices, std::vector<Vec3>& vertices, std::vector<int>& faceNormalIndices, std::vector<Vec3>& normals, Triangle& t)
+bool Model::findTriangle(std::vector<int>& faceVertexIndices, std::vector<Vec3>& vertices, int indices[3], Vec3& normal, Triangle& t)
 {
     // find the next convex triangle
     // evaluate triangle abc with b as the potential ear
@@ -133,16 +145,11 @@ bool Model::findTriangle(std::vector<int>& faceVertexIndices, std::vector<Vec3>&
                 }
             }
             if (validTriangle) {
-                if (!faceNormalIndices.empty()) {
-                    t = Triangle(a, b, c, a, b, c);
-                } else {
-                    t = Triangle(a, b, c, -1, -1, -1);
-                }
-                triangles.push_back(t);
-
-                Vec3 normal = Vec3::cross(edgeBA, edgeBC);
+                indices[0] = a;
+                indices[1] = b;
+                indices[2] = c;
+                normal = Vec3::cross(edgeBA, edgeBC);
                 normal.normalize();
-                faceNormals.push_back(normal);
                 return true;
             }
         }
