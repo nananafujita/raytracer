@@ -2,6 +2,16 @@
 
 #include "Model.h"
 
+#define FOV 60.0
+#define WIDTH 1280
+#define HEIGHT 960
+
+void display()
+{
+    double origin[3] = {0, 0, 0};
+    float angle = (FOV / 2) * M_PI / 180.0;
+}
+
 int main(int argc, char* argv[])
 {
     GLFWwindow* window;

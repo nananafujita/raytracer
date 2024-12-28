@@ -2,6 +2,8 @@
 #define MODEL_H
 
 #include <vector>
+#include "Vec3.h"
+#include "Triangle.h"
 
 class Model 
 {
@@ -9,13 +11,12 @@ public:
     Model(char* filename);
     bool loadOBJ();
 private:
+    bool addFace(std::vector<int>& faceVertexIndices, std::vector<Vec3>& vertices, std::vector<int>& faceNormalIndices, std::vector<Vec3>& normals);
+    bool findTriangle(std::vector<int>& faceVertexIndices, std::vector<Vec3>& vertices, std::vector<int>& faceNormalIndices, std::vector<Vec3>& normals, Triangle& t);
     char* filename;
-    std::vector<float> vertices;   //vertices, stored as x, y, z
-    std::vector<float> normals;  //normals, stored as x, y, z
-    std::vector<float> textures;  //texture coords, stored as u, v
-    std::vector<int> faceV;
-    std::vector<int> faceVt;
-    std::vector<int> faceVn;
+
+    std::vector<Triangle> triangles;
+    std::vector<Vec3> faceNormals; // triangulated face normals - facenormals[i] is for triangles[i]
 };
 
 #endif
