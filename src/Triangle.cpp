@@ -18,10 +18,12 @@ float Triangle::area(const Point3& a, const Point3& b, const Point3& c)
     Vec3 perpendicular = Vec3::cross(ab, ac);
     return Vec3::magnitude(perpendicular) * 0.5;
 }
+
 float Triangle::area(const Vec3& ab, const Vec3& ac) {
     Vec3 perpendicular = Vec3::cross(ab, ac);
     return Vec3::magnitude(perpendicular) * 0.5;
 }
+
 bool Triangle::isInside(const Triangle& t, const Vec3& p, const std::vector<Vec3>& vertices)
 {
     const Vec3& v0 = vertices[t.v0];
@@ -43,10 +45,5 @@ bool Triangle::isInside(const Vec3& a, const Vec3& b, const Vec3& c, const Vec3&
     float areaP02 = area(p, a, c);
     float areaP01 = area(p, a, b);
     return areaTri == areaP12 + areaP02 + areaP01;
-}
-
-bool Triangle::isConvex(const Triangle& t)
-{
-
 }
 // End utility functions

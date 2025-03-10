@@ -17,8 +17,7 @@ public:
     static float area(const Vec3& a, const Vec3& b, const Vec3& c);
     static float area(const Vec3& ab, const Vec3& ac);
 
-    static bool isConvex(const Triangle& t);
-    static bool isConvex(const Vec3& a, const Vec3& b, const Vec3& c);
+
     static bool isInside(const Triangle& t, const Vec3& p, const std::vector<Vec3>& vertices);
     static bool isInside(const Vec3& a, const Vec3& b, const Vec3& c, const Vec3& p);
     

@@ -40,8 +40,7 @@ int main(int argc, char* argv[])
         glfwTerminate();
         return -1;
     }
-
-
+    printf("model size: %zu", model.getTriangles().size());
 
     while (!glfwWindowShouldClose(window))
     {

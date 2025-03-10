@@ -6,6 +6,7 @@
 Model::Model(char* f)
 : filename(f)
 {
+    printf("File loaded. Filename: %s/n", f);
 }
 
 // Parse OBJ file to define triangles, fills triangles vector
@@ -23,17 +24,23 @@ bool Model::loadOBJ()
     std::vector<Vec3> vertices, normals, textures;
     while (fgets(buffer, sizeof(buffer), file))
     {
+        //printf("reading buffer: %s\n", buffer);
         char type[3];
         float x, y, z;
         if (sscanf(buffer, "v %f %f %f", &x, &y, &z) == 3) {
             vertices.emplace_back(x, y, z); 
+            //printf("found vertex: %f %f %f\n", x, y, z);
         } else if (sscanf(buffer, "vn %f %f %f", &x, &y, &z) == 3) {
             normals.emplace_back(x, y, z); 
+            //printf("found normal: %f %f %f\n", x, y, z);
         } else if (sscanf(buffer, "vt %f %f %f", &x, &y, &z) == 2) {
             textures.emplace_back(x, y, -1.0f); 
+            //printf("found texture: %f %f\n", x, y);
         } else if (sscanf(buffer, "vt %f %f %f", &x, &y, &z) == 3) {
             textures.emplace_back(x, y, z); 
+            //printf("found texture: %f %f %f\n", x, y, z);
         } else if (buffer[0] == 'f') {
+            //printf("found face\n");
             char* ptr = buffer + 2;     // move ptr to next char after 'f '
             int v, vt, vn;
             int faceCount = 0;
@@ -66,12 +73,11 @@ bool Model::loadOBJ()
                 (faceVn.size() > 0 && faceVn.size() != faceV.size())) {
                     printf("Error: inconsistent number of face vertex, texture, and normal indicies. All faces must have the same number of variables. %s\n", buffer);
                     return false;
-            }
+            } 
             if (!addFace(faceV, vertices, faceVn, normals)) {
                 printf("Error: error adding face. %s\n", buffer);
                 return false;
             }
-
         } else {
             printf("Error: unrecognized line in OBJ file. %s/n", buffer);
             return false;
@@ -91,10 +97,12 @@ bool Model::addFace(std::vector<int>& faceVertexIndices, std::vector<Vec3>& vert
     int v2 = 1;
 
     int attempts = 0;
+    Vec3 normal = Vec3::origin;
+    Triangle t;
     while (faceVertexIndices.size() > 3 && attempts <= faceVertexIndices.size()) {
         attempts++;
-        Vec3 normal = Vec3::origin;
-        Triangle t;
+        normal = Vec3::origin;
+
         int indices[3] = {-1, -1, -1};
         if (findTriangle(faceVertexIndices, vertices, indices, normal, t)) {
             if (!faceNormalIndices.empty()) {
@@ -109,7 +117,7 @@ bool Model::addFace(std::vector<int>& faceVertexIndices, std::vector<Vec3>& vert
         }
     }
     if (faceVertexIndices.size() == 3) {
-
+        t = Triangle()
     }
     if (attempts > faceVertexIndices.size()) {
         printf("Error: failed to find valid triangle, too many attempts.");

@@ -18,7 +18,7 @@ find_package(glfw3 3.4 REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIR})
 
 # Create executable
-add_executable(raytracer src/main.cpp src/Model.cpp)
+add_executable(raytracer src/main.cpp src/Model.cpp src/Triangle.cpp src/Vec3.cpp)
 
 # Link libraries to the executable
 target_link_libraries(raytracer OpenGL::GL glfw)
