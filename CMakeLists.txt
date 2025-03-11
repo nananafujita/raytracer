@@ -16,6 +16,7 @@ find_package(glfw3 3.4 REQUIRED)
 
 # Include directories
 include_directories(${OPENGL_INCLUDE_DIR})
+include_directories(libs/glfw-3.4.bin.WIN64/include)
 
 # Create executable
 add_executable(raytracer src/main.cpp src/Model.cpp src/Triangle.cpp src/Vec3.cpp)
