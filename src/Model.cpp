@@ -117,7 +117,7 @@ bool Model::addFace(std::vector<int>& faceVertexIndices, std::vector<Vec3>& vert
         }
     }
     if (faceVertexIndices.size() == 3) {
-        t = Triangle()
+        t = Triangle();
     }
     if (attempts > faceVertexIndices.size()) {
         printf("Error: failed to find valid triangle, too many attempts.");
