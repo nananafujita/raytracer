@@ -9,6 +9,7 @@
 #define FOV 60.0
 const int WIDTH = 512; //1280
 const int HEIGHT = 512; //960
+GLuint textureID;
 
 void error_callback(int error, const char* description) {
     printf("GLFW Error %d: %s\n", error, description);
@@ -29,22 +30,17 @@ void display()
 }
 
 void generateGradient(std::vector<unsigned char>& pixels) {
-    /*for (int j=HEIGHT-1; j>=0; j--){
+    for (int j=HEIGHT-1; j>=0; j--){
         for (int i=0; i<WIDTH; i++) {
             auto r = static_cast<unsigned char>(255.999 * (double(i) / (WIDTH - 1)));
             auto g = static_cast<unsigned char>(255.999 * (double(j) / (HEIGHT - 1)));
             auto b = 0;
-            pixels.push_back(r);
-            pixels.push_back(g);
-            pixels.push_back(b);
+            int index = (j * WIDTH + i) * 3;
+            pixels[index]     = r;
+            pixels[index + 1] = g;
+            pixels[index + 2] = b;
         }
-    }*/
-    glBegin(GL_QUADS);
-        glColor3f(0.0f, 0.0f, 0.0f); glVertex2i(0, 0);           // Bottom-left (black)
-        glColor3f(1.0f, 0.0f, 0.0f); glVertex2i(WIDTH, 0);       // Bottom-right (red)
-        glColor3f(1.0f, 1.0f, 0.0f); glVertex2i(WIDTH, HEIGHT);  // Top-right (yellow)
-        glColor3f(0.0f, 1.0f, 0.0f); glVertex2i(0, HEIGHT);      // Top-left (green)
-    glEnd();
+    }
 }
 
 void handleInput(GLFWwindow* window) 
@@ -72,47 +68,61 @@ int main(int argc, char* argv[])
     //initOpenGL();
 
     std::vector<unsigned char> pixels(WIDTH * HEIGHT * 3);
+    generateGradient(pixels);
 
-    // Fill pixels iteratively like your original code
-    for (int j = 0; j < HEIGHT; j++) {
-        for (int i = 0; i < WIDTH; i++) {
-            double r = double(i) / (WIDTH - 1);
-            double g = double(j) / (HEIGHT - 1);
-            double b = 0.0;
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
 
-            int ir = int(255.999 * r);
-            int ig = int(255.999 * g);
-            int ib = int(255.999 * b);
+    // Enable 2D texturing
+    glEnable(GL_TEXTURE_2D);
 
-            int index = (j * WIDTH + i) * 3;
-            pixels[index + 0] = ir;
-            pixels[index + 1] = ig;
-            pixels[index + 2] = ib;
-        }
+    // Main loop
+    while (!glfwWindowShouldClose(window)) {
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(-1.0f, -1.0f);
+        glTexCoord2f(1.0f, 0.0f); glVertex2f(1.0f, -1.0f);
+        glTexCoord2f(1.0f, 1.0f); glVertex2f(1.0f, 1.0f);
+        glTexCoord2f(0.0f, 1.0f); glVertex2f(-1.0f, 1.0f);
+        glEnd();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
     }
 
-    /*Model model(argv[1]);
-    if (!model.loadOBJ()) {
-        glfwTerminate();
-        return -1;
-    }
-    printf("model size: %zu", model.getTriangles().size());*/
-
-    //generateGradient(pixels);
-    glViewport(0, 0, WIDTH, HEIGHT);
+    glDeleteTextures(1, &texture); /*
 
     while (!glfwWindowShouldClose(window))
     {
         GLint windowWidth, windowHeight;
         glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
         glViewport(0, 0, windowWidth, windowHeight);
+
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0, windowWidth, 0, windowHeight, -1, 1);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+
         handleInput(window);
 
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        glRasterPos2i(0, 0);
         glDrawPixels(WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
         glfwSwapBuffers(window);
         glfwPollEvents();
-    }
+    }*/
 
     glfwDestroyWindow(window);
     glfwTerminate();
