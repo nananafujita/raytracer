@@ -8,18 +8,49 @@ public:
     float x, y, z;
 
     void normalize(); 
-
-    friend Vec3 operator+(const Vec3& a, const Vec3& b);
-    friend Vec3 operator-(const Vec3& a, const Vec3& b);
-
-    static float angleBetween(const Vec3& a, const Vec3& b);
-    static Vec3 cross(const Vec3& a, const Vec3& b);
-    static float dot(const Vec3& a, const Vec3& b);
-    static float magnitude(const Vec3& a);
     
     static const Vec3 origin;
 };
 
 using Point3 = Vec3;
+
+inline Vec3 operator+(const Vec3& a, const Vec3& b) 
+{
+    return Vec3(a.x + b.x, a.y + b.y, a.z + b.z);
+}
+
+inline Vec3 operator-(const Vec3& a, const Vec3& b) 
+{
+    return Vec3(a.x - b.x, a.y - b.y, a.z - b.z);
+}
+
+inline Vec3 operator*(const float t, const Vec3& v)
+{
+    return Vec3(t * v.x, t * v.y, t * v.z);
+}
+
+inline float angleBetween(const Vec3& a, const Vec3& b)
+{
+    return acos(dot(a, b) / (magnitude(a) * magnitude(b)));
+}
+
+inline Vec3 cross(const Vec3& a, const Vec3& b)
+{
+    return Vec3 ( 
+        a.y * b.z - a.z * b.y, 
+        a.z * b.x - a.x * b.z, 
+        a.x * b.y - a.y * b.x 
+    ); 
+}
+
+inline float dot(const Vec3& a, const Vec3& b)
+{
+    return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
+}
+
+inline float magnitude(const Vec3& a)
+{
+    return sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+}
 
 #endif
