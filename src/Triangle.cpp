@@ -15,13 +15,13 @@ float Triangle::area(const Point3& a, const Point3& b, const Point3& c)
 {
     Vec3 ab = b - a;
     Vec3 ac = c - a;
-    Vec3 perpendicular = Vec3::cross(ab, ac);
-    return Vec3::magnitude(perpendicular) * 0.5;
+    Vec3 perpendicular = cross(ab, ac);
+    return magnitude(perpendicular) * 0.5;
 }
 
 float Triangle::area(const Vec3& ab, const Vec3& ac) {
-    Vec3 perpendicular = Vec3::cross(ab, ac);
-    return Vec3::magnitude(perpendicular) * 0.5;
+    Vec3 perpendicular = cross(ab, ac);
+    return magnitude(perpendicular) * 0.5;
 }
 
 bool Triangle::isInside(const Triangle& t, const Vec3& p, const std::vector<Vec3>& vertices)

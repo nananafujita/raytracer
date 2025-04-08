@@ -142,7 +142,7 @@ bool Model::findTriangle(std::vector<int>& faceVertexIndices, std::vector<Vec3>&
         Vec3 edgeBA = pA - pB;
         Vec3 edgeBC = pC - pB;
         
-        if (Vec3::angleBetween(edgeBA, edgeBC) < M_PI) {
+        if (angleBetween(edgeBA, edgeBC) < M_PI) {
             bool validTriangle = true;
             for (int i = 0; i < faceVertexIndices.size(); i++) {
                 if (i == a || i == b || i == c) continue;
@@ -156,7 +156,7 @@ bool Model::findTriangle(std::vector<int>& faceVertexIndices, std::vector<Vec3>&
                 indices[0] = a;
                 indices[1] = b;
                 indices[2] = c;
-                normal = Vec3::cross(edgeBA, edgeBC);
+                normal = cross(edgeBA, edgeBC);
                 normal.normalize();
                 return true;
             }
