@@ -1,8 +1,8 @@
 #include <GLFW/glfw3.h>
-#include <cstdio>
-#include <cstdlib>
+#include <stdio.h>
+#include <stdlib.h>
 
-#include "scene_loader.h"
+#include "scene.h"
 
 int main(int argc, char* argv[]) 
 {
