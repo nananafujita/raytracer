@@ -6,7 +6,6 @@
 
 int main(int argc, char* argv[]) 
 {
-
     if (!glfwInit()) {
         printf("Failed to initialize GLFW. Exiting program.\n");
         return -1;

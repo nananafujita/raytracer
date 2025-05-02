@@ -7,13 +7,10 @@
 #define MAX_SPHERES 100
 #define MAX_LIGHTS 100
 
-typedef struct Vertex {
+typedef struct Light {
     double position[3];
-    double normal[3];
-    double color_diffuse[3];
-    double color_specular[3];
-    double shine;
-} Vertex;
+    double color[3];
+} Light;
 
 typedef struct Sphere {
     double position[3];
@@ -23,8 +20,16 @@ typedef struct Sphere {
     double shine;
 } Sphere;
 
+typedef struct TriangleVertex {
+    double position[3];
+    double normal[3];
+    double color_diffuse[3];
+    double color_specular[3];
+    double shine;
+} TriangleVertex;
+
 typedef struct Triangle {
-    Vertex vertices[3];
+    TriangleVertex vertices[3];
 } Triangle;
 
 typedef struct Scene {
@@ -36,12 +41,8 @@ typedef struct Scene {
     int num_spheres;
 } Scene;
 
-typedef struct Light {
-    double position[3];
-    double color[3];
-} Light;
-
 int load_scene(char* filename);
+
 void parse_double(FILE* file, char* type, double d);
 void parse_vector(FILE* file, char* type, double p[3]);
 void validate_type(char* expected, char* actual);

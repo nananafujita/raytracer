@@ -1,7 +1,5 @@
 #include "scene.h"
 
-// #include <cstdio>
-
 // Checks if the type identifier matches expected 
 // This is where formatting errors ("position:" vs "pos:") and missing information is caught
 void validate_type(char* expected, char* actual)
@@ -41,7 +39,7 @@ void validate_light(Light* l)
         l->color[1] < 0 || l->color[1] > 1 || 
         l->color[2] < 0 || l->color[2] > 1) {
             printf("Error in light definition. Refer to README for requirements.\n");
-        exit(0);
+            exit(0);
         }
 }
 
@@ -143,7 +141,10 @@ int load_scene(char* filename)
                 printf("Error: too many lights. Increase MAX_LIGHTS\n");
                 exit(0);
             } 
+        } else {
+            printf("Error: unknown type in scene file: %s. Refer to README for acceptable types.\n", type);
+            exit(0);
         }
     }
-
+    return 0;
 }
