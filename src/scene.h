@@ -28,15 +28,26 @@ typedef struct Triangle {
 } Triangle;
 
 typedef struct Scene {
+    Light lights[MAX_LIGHTS];
     Triangle triangles[MAX_TRIANGLES];
     Sphere spheres[MAX_SPHERES];
+    int num_lights;
+    int num_triangles;
+    int num_spheres;
 } Scene;
+
+typedef struct Light {
+    double position[3];
+    double color[3];
+} Light;
 
 int load_scene(char* filename);
 void parse_double(FILE* file, char* type, double d);
 void parse_vector(FILE* file, char* type, double p[3]);
 void validate_type(char* expected, char* actual);
 
-void validate_sphere(struct Sphere* s);
+void validate_light(Light* l);
+void validate_sphere(Sphere* s);
+void validate_triangle(Triangle* t);
 
 #endif
