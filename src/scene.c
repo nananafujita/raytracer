@@ -1,4 +1,4 @@
-#include "scene_loader.h"
+#include "scene.h"
 
 // #include <cstdio>
 
@@ -35,7 +35,7 @@ void parse_vector(FILE* file, char* type, double v[3])
     }  
 }
 
-void validate_sphere(struct Sphere s) 
+void validate_sphere(Sphere s) 
 {
     if (s.radius < 0 || s.shine < 0 || s.shine > 1 ||
         s.color_diffuse[0] < 0 || s.color_diffuse[0] > 1 ||
@@ -69,7 +69,9 @@ int load_scene(char* filename)
     parse_vector(file, "amb:", ambient_light);
 
     char* type[10];
-    struct Sphere s;
+    Sphere s;
+    Triangle t;
+    Vertex v;
 
     for (int i=0; i<object_count; i++) {
         fscanf(file, "%s\n", &type);
@@ -81,6 +83,12 @@ int load_scene(char* filename)
             parse_vector(file, "spe:", s.color_specular);
             parse_double(file, "shi:", s.shine);
             validate_sphere(s);
+        } else if (strcasecmp(type, "triangle") == 0) {
+            parse_vector(file, "pos:", s.position);
+            parse_double(file, "rad:", s.radius);
+            parse_vector(file, "dif:", s.color_diffuse);
+            parse_vector(file, "spe:", s.color_specular);
+            parse_double(file, "shi:", s.shine);
         }
     }
 
