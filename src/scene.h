@@ -9,7 +9,7 @@
 
 typedef struct Vertex {
     double position[3];
-    double radius;
+    double normal[3];
     double color_diffuse[3];
     double color_specular[3];
     double shine;
@@ -24,7 +24,7 @@ typedef struct Sphere {
 } Sphere;
 
 typedef struct Triangle {
-    struct Vertex v[3];
+    Vertex vertices[3];
 } Triangle;
 
 typedef struct Scene {
@@ -37,6 +37,6 @@ void parse_double(FILE* file, char* type, double d);
 void parse_vector(FILE* file, char* type, double p[3]);
 void validate_type(char* expected, char* actual);
 
-void validate_sphere(struct Sphere s);
+void validate_sphere(struct Sphere* s);
 
 #endif

@@ -35,17 +35,35 @@ void parse_vector(FILE* file, char* type, double v[3])
     }  
 }
 
-void validate_sphere(Sphere s) 
+void validate_sphere(Sphere* s) 
 {
-    if (s.radius < 0 || s.shine < 0 || s.shine > 1 ||
-        s.color_diffuse[0] < 0 || s.color_diffuse[0] > 1 ||
-        s.color_diffuse[1] < 0 || s.color_diffuse[1] > 1 ||
-        s.color_diffuse[2] < 0 || s.color_diffuse[2] > 1 ||
-        s.color_specular[0] < 0 || s.color_specular[0] > 1 ||
-        s.color_specular[1] < 0 || s.color_specular[1] > 1 ||
-        s.color_specular[2] < 0 || s.color_specular[2] > 1) 
+    if (s->radius < 0 || s->shine < 0 || s->shine > 1 ||
+        s->color_diffuse[0] < 0 || s->color_diffuse[0] > 1 ||
+        s->color_diffuse[1] < 0 || s->color_diffuse[1] > 1 ||
+        s->color_diffuse[2] < 0 || s->color_diffuse[2] > 1 ||
+        s->color_specular[0] < 0 || s->color_specular[0] > 1 ||
+        s->color_specular[1] < 0 || s->color_specular[1] > 1 ||
+        s->color_specular[2] < 0 || s->color_specular[2] > 1) 
     {
         printf("Error in sphere definition. Refer to README for requirements.\n");
+        exit(0);
+    }
+}
+
+void validate_triangle(Triangle* t) 
+{
+    for (int i=0; i<3; i++) {
+        if (t->vertices[i].shine < 0 || t->vertices[i].shine > 1 ||
+            t->vertices[i].color_diffuse[0] < 0 || t->vertices[i].color_diffuse[0] > 1 ||
+            t->vertices[i].color_diffuse[1] < 0 || t->vertices[i].color_diffuse[1] > 1 ||
+            t->vertices[i].color_diffuse[2] < 0 || t->vertices[i].color_diffuse[2] > 1 ||
+            t->vertices[i].color_specular[0] < 0 || t->vertices[i].color_specular[0] > 1 ||
+            t->vertices[i].color_specular[1] < 0 || t->vertices[i].color_specular[1] > 1 ||
+            t->vertices[i].color_specular[2] < 0 || t->vertices[i].color_specular[2] > 1) 
+        {
+            printf("Error in sphere definition. Refer to README for requirements.\n");
+            exit(0);
+        }
     }
 }
 
@@ -71,7 +89,6 @@ int load_scene(char* filename)
     char* type[10];
     Sphere s;
     Triangle t;
-    Vertex v;
 
     for (int i=0; i<object_count; i++) {
         fscanf(file, "%s\n", &type);
@@ -82,13 +99,16 @@ int load_scene(char* filename)
             parse_vector(file, "dif:", s.color_diffuse);
             parse_vector(file, "spe:", s.color_specular);
             parse_double(file, "shi:", s.shine);
-            validate_sphere(s);
+            validate_sphere(&s);
         } else if (strcasecmp(type, "triangle") == 0) {
-            parse_vector(file, "pos:", s.position);
-            parse_double(file, "rad:", s.radius);
-            parse_vector(file, "dif:", s.color_diffuse);
-            parse_vector(file, "spe:", s.color_specular);
-            parse_double(file, "shi:", s.shine);
+            for (int v=0; v<3; v++) {
+                parse_vector(file, "pos:", t.vertices[v].position);
+                parse_vector(file, "nor:", t.vertices[v].normal);
+                parse_vector(file, "dif:", t.vertices[v].color_diffuse);
+                parse_vector(file, "spe:", t.vertices[v].color_specular);
+                parse_double(file, "shi:", t.vertices[v].shine);
+            }
+            validate_triangle(&t);
         }
     }
 
