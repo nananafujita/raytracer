@@ -43,7 +43,7 @@ typedef struct Scene {
 
 int load_scene(char* filename);
 
-void parse_double(FILE* file, char* type, double d);
+void parse_double(FILE* file, char* type, double* d);
 void parse_vector(FILE* file, char* type, double p[3]);
 void validate_type(char* expected, char* actual);
 

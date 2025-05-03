@@ -1,5 +1,8 @@
 #include "scene.h"
 
+#include <strings.h>
+#include <stdlib.h>
+
 // Checks if the type identifier matches expected 
 // This is where formatting errors ("position:" vs "pos:") and missing information is caught
 void validate_type(char* expected, char* actual)
@@ -10,10 +13,12 @@ void validate_type(char* expected, char* actual)
     }
 }
 
-void parse_double(FILE* file, char* type, double d) 
+// Parses 1 double value. 
+// Pass file, expected type (eg. "rad:") given file formatting rules (check README), and pointer to value
+void parse_double(FILE* file, char* type, double* d) 
 {
     char str[50];
-    fscanf(file, "%s", &str);
+    fscanf(file, "%s", str);
     validate_type(type, str);
     if (fscanf(file, "%lf", d) != 1) {
         printf("Error parsing file: expected 1 value at %s", str);
@@ -22,10 +27,11 @@ void parse_double(FILE* file, char* type, double d)
 }
 
 // Parses values comprised of 3 doubles 
+// Pass file, expected type (eg. "rad:") given file formatting rules (check README), and value array
 void parse_vector(FILE* file, char* type, double v[3])
 {
     char str[50];
-    fscanf(file, "%s", &str);
+    fscanf(file, "%s", str);
     validate_type(type, str);
     if (fscanf(file, "%lf %lf %lf", &v[0], &v[1], &v[2]) != 3) {
         printf("Error parsing file: expected 3 values at %s", str);
@@ -86,17 +92,20 @@ int load_scene(char* filename)
 
     int num_objects = 0;
     char object_type[50];
-    float ambient_light[3];
+    double ambient_light[3];
 
     if (fscanf(file, "%i", &num_objects) != 1) {
         printf("Error reading scene file. First line must be integer representing number of objects in scene.\n");
         return -1;
     }
+    printf("read %i objects.\n", num_objects);
+
     parse_vector(file, "amb:", ambient_light);
 
     Scene scene;
     scene.num_spheres = 0;
     scene.num_triangles = 0;
+    scene.num_lights = 0;
 
     char type[10];
     Sphere s;
@@ -104,14 +113,14 @@ int load_scene(char* filename)
     Light l;
 
     for (int i=0; i<num_objects; i++) {
-        fscanf(file, "%s\n", &type);
-
+        fscanf(file, "%s\n", type);
+        printf("read type %s\n", type);
         if (strcasecmp(type, "sphere") == 0) {
             parse_vector(file, "pos:", s.position);
-            parse_double(file, "rad:", s.radius);
+            parse_double(file, "rad:", &s.radius);
             parse_vector(file, "dif:", s.color_diffuse);
             parse_vector(file, "spe:", s.color_specular);
-            parse_double(file, "shi:", s.shine);
+            parse_double(file, "shi:", &s.shine);
             validate_sphere(&s);
             scene.spheres[scene.num_spheres++] = s;
             if (scene.num_spheres > MAX_SPHERES) {
@@ -124,7 +133,7 @@ int load_scene(char* filename)
                 parse_vector(file, "nor:", t.vertices[v].normal);
                 parse_vector(file, "dif:", t.vertices[v].color_diffuse);
                 parse_vector(file, "spe:", t.vertices[v].color_specular);
-                parse_double(file, "shi:", t.vertices[v].shine);
+                parse_double(file, "shi:", &t.vertices[v].shine);
             }
             validate_triangle(&t);
             scene.triangles[scene.num_triangles++] = t;
