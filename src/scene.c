@@ -217,7 +217,7 @@ int load_scene(char* filename)
     for (int i=0; i<num_objects; i++) {
         int count = fscanf(file, "%s\n", type);
         if (count == EOF) {
-            printf("Declared number of objects %i and actual %i are not the same. Continuing program with %i objects.\n", num_objects, i+1, i+1);
+            printf("Warning: declared number of objects (%i) and actual (%i) are not the same. Continuing program with %i objects.\n", num_objects, i, i);
             break;
         } else if (count != 1) {
             parse_error(TYPE_MISMATCH, i+1);
@@ -267,6 +267,8 @@ int load_scene(char* filename)
     }
 
     // the case where ther are more objects than initially declared
-
+    if (fscanf(file, "%s", type) == 1) {
+        fprintf(stderr, "Warning: more objects found in file than declared (%i).\n", num_objects);
+    }
     return 0;
 }
