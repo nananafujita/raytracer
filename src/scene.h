@@ -7,6 +7,17 @@
 #define MAX_SPHERES 100
 #define MAX_LIGHTS 100
 
+typedef enum {
+    PARSE_SUCCESS = 0,
+    FILE_OPEN_ERROR,
+    MISSING_OBJECT_COUNT,
+    TYPE_MISMATCH,
+    MISSING_VALUES,
+    VALUE_OUT_OF_BOUNDS,
+    TOO_MANY_OBJECTS,
+    UNKNOWN_OBJECT
+} ParseStatus;
+
 typedef struct Light {
     double position[3];
     double color[3];
@@ -43,12 +54,12 @@ typedef struct Scene {
 
 int load_scene(char* filename);
 
-void parse_double(FILE* file, char* type, double* d);
-void parse_vector(FILE* file, char* type, double p[3]);
-void validate_type(char* expected, char* actual);
+ParseStatus parse_double(FILE* file, char* type, double* d);
+ParseStatus parse_vector(FILE* file, char* type, double p[3]);
+ParseStatus validate_type(char* expected, char* actual);
 
-void validate_light(Light* l);
-void validate_sphere(Sphere* s);
-void validate_triangle(Triangle* t);
+ParseStatus validate_light(Light* l);
+ParseStatus validate_sphere(Sphere* s);
+ParseStatus validate_triangle(Triangle* t);
 
 #endif
