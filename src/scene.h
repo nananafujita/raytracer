@@ -11,11 +11,11 @@ typedef enum {
     PARSE_SUCCESS = 0,
     FILE_OPEN_ERROR,
     MISSING_OBJECT_COUNT,
-    TYPE_MISMATCH,
     MISSING_VALUES,
-    VALUE_OUT_OF_BOUNDS,
+    TYPE_MISMATCH,
     TOO_MANY_OBJECTS,
-    UNKNOWN_OBJECT
+    UNKNOWN_OBJECT,
+    VALUE_OUT_OF_BOUNDS
 } ParseStatus;
 
 typedef struct Light {
@@ -53,13 +53,18 @@ typedef struct Scene {
 } Scene;
 
 int load_scene(char* filename);
+void parse_error(ParseStatus status, int object_number);
+
+ParseStatus parse_light(FILE* file, Light* light);
+ParseStatus parse_sphere(FILE* file, Sphere* sphere);
+ParseStatus parse_triangle(FILE* file, Triangle* triangle);
 
 ParseStatus parse_double(FILE* file, char* type, double* d);
 ParseStatus parse_vector(FILE* file, char* type, double p[3]);
 ParseStatus validate_type(char* expected, char* actual);
 
-ParseStatus validate_light(Light* l);
-ParseStatus validate_sphere(Sphere* s);
-ParseStatus validate_triangle(Triangle* t);
+ParseStatus validate_light(Light* light);
+ParseStatus validate_sphere(Sphere* sphere);
+ParseStatus validate_triangle(Triangle* triangle);
 
 #endif
