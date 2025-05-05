@@ -11,7 +11,7 @@ void key_callback(GLFWwindow* wind, int key, int scancode, int action, int mods)
 {
     switch(key)
     {
-        case(256):
+        case 256:
             exit(0);
             break;
     }
@@ -25,6 +25,7 @@ int main(int argc, char* argv[])
     }
 
     if (load_scene(argv[1]) != 0) {
+        fprintf(stderr, "Error when parsing file. See above comments for details.\n");
         return -1;
     }
 

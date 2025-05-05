@@ -3,7 +3,6 @@
 #include <strings.h>
 #include <stdlib.h>
 
-
 int load_scene(char* filename) 
 {
     FILE* file = fopen(filename, "r");
