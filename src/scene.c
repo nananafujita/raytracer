@@ -3,6 +3,15 @@
 #include <strings.h>
 #include <stdlib.h>
 
+Light lights[MAX_LIGHTS];
+Triangle triangles[MAX_TRIANGLES];
+Sphere spheres[MAX_SPHERES];
+Vec3 ambient_light;
+
+int num_spheres = 0;
+int num_triangles = 0;
+int num_lights = 0;
+
 int load_scene(char* filename) 
 {
     FILE* file = fopen(filename, "r");
@@ -13,7 +22,6 @@ int load_scene(char* filename)
     }
 
     int num_objects = 0;
-    double ambient_light[3];
 
     if (fscanf(file, "%i", &num_objects) != 1) {
         parse_error(MISSING_OBJECT_COUNT, 0);
@@ -21,22 +29,17 @@ int load_scene(char* filename)
     }
 
     ParseStatus status;
-    status = parse_vector(file, "amb:", ambient_light);
+
+    status = parse_vec3(file, "amb:", ambient_light);
     if (status != PARSE_SUCCESS) {
         parse_error(status, 0);
         return -1;
     }
 
-    Scene scene;
-    scene.num_spheres = 0;
-    scene.num_triangles = 0;
-    scene.num_lights = 0;
-
     char type[10];
     Sphere s;
     Triangle t;
     Light l;
-
     for (int i=0; i<num_objects; i++) {
         int count = fscanf(file, "%s\n", type);
         if (count == EOF) {
@@ -53,9 +56,8 @@ int load_scene(char* filename)
                 parse_error(status, i+1);
                 return -1;
             }
-
-            scene.spheres[scene.num_spheres++] = s;
-            if (scene.num_spheres > MAX_SPHERES) {
+            spheres[num_spheres++] = s;
+            if (num_spheres > MAX_SPHERES) {
                 parse_error(TOO_MANY_OBJECTS, i+1);
                 return -1;
             }
@@ -65,9 +67,8 @@ int load_scene(char* filename)
                 parse_error(status, i+1);
                 return -1;
             }
-
-            scene.triangles[scene.num_triangles++] = t;
-            if (scene.num_triangles > MAX_TRIANGLES) {
+            triangles[num_triangles++] = t;
+            if (num_triangles > MAX_TRIANGLES) {
                 parse_error(TOO_MANY_OBJECTS, i+1);
                 return -1;
             } 
@@ -77,9 +78,8 @@ int load_scene(char* filename)
                 parse_error(status, i+1);
                 return -1;
             }
-
-            scene.lights[scene.num_lights++] = l;
-            if (scene.num_lights > MAX_LIGHTS) {
+            lights[num_lights++] = l;
+            if (num_lights > MAX_LIGHTS) {
                 parse_error(TOO_MANY_OBJECTS, i+1);
                 return -1;
             } 
@@ -105,10 +105,10 @@ void parse_error(ParseStatus status, int object_number)
         case PARSE_SUCCESS:
             break;
         case FILE_OPEN_ERROR:
-            fprintf(stderr, "Unable to open scene file.\n");
+            fprintf(stderr, "Unable to open  file.\n");
             break;
         case MISSING_OBJECT_COUNT:
-            fprintf(stderr, "first line must be an integer representing number of objects in the scene.\n");
+            fprintf(stderr, "first line must be an integer representing number of objects in the .\n");
             break;
         case TYPE_MISMATCH:
             fprintf(stderr, "mismatch in expected and actual type identifiers. Refer to README for scene formatting rules.\n");
@@ -120,10 +120,10 @@ void parse_error(ParseStatus status, int object_number)
             fprintf(stderr, "value is out of bounds. Refer to README for scene formatting rules.\n");
             break;
         case TOO_MANY_OBJECTS:
-            fprintf(stderr, "too many objects in file. Consider updating MAX_*OBJECTS in scene.h\n");
+            fprintf(stderr, "too many objects in file. Consider updating MAX_*OBJECTS in scene.c\n");
             break;
         case UNKNOWN_OBJECT:
-            fprintf(stderr, "unknown object name. Refer to README for scene formatting rules.\n");
+            fprintf(stderr, "unknown object name. Refer to README for  formatting rules.\n");
             break;
         default:
             fprintf(stderr, "Unknown error.\n");
@@ -135,9 +135,9 @@ ParseStatus parse_light(FILE* file, Light* light)
 {
     ParseStatus status;
     
-    status = parse_vector(file, "pos:", light->position);
+    status = parse_vec3(file, "pos:", light->position);
     if (status != PARSE_SUCCESS) return status;
-    status = parse_vector(file, "col:", light->color);
+    status = parse_vec3(file, "col:", light->color);
     if (status != PARSE_SUCCESS) return status;
     status = validate_light(light);
     if (status != PARSE_SUCCESS) return status;
@@ -148,16 +148,16 @@ ParseStatus parse_light(FILE* file, Light* light)
 ParseStatus parse_sphere(FILE* file, Sphere* sphere)
 {
     ParseStatus status;
-    status = parse_vector(file, "pos:", sphere->position);
+    status = parse_vec3(file, "pos:", sphere->position);
     if (status != PARSE_SUCCESS) return status;
 
     status = parse_double(file, "rad:", &sphere->radius);
     if (status != PARSE_SUCCESS) return status;
 
-    status = parse_vector(file, "dif:", sphere->color_diffuse);
+    status = parse_vec3(file, "dif:", sphere->color_diffuse);
     if (status != PARSE_SUCCESS) return status;
 
-    status = parse_vector(file, "spe:", sphere->color_specular);
+    status = parse_vec3(file, "spe:", sphere->color_specular);
     if (status != PARSE_SUCCESS) return status;
 
     status = parse_double(file, "shi:", &sphere->shine);
@@ -173,16 +173,16 @@ ParseStatus parse_triangle(FILE* file, Triangle* triangle)
 {
     ParseStatus status;
     for (int v=0; v<3; v++) {
-        status = parse_vector(file, "pos:", triangle->vertices[v].position);
+        status = parse_vec3(file, "pos:", triangle->vertices[v].position);
         if (status != PARSE_SUCCESS) return status;
 
-        status = parse_vector(file, "nor:", triangle->vertices[v].normal);
+        status = parse_vec3(file, "nor:", triangle->vertices[v].normal);
         if (status != PARSE_SUCCESS) return status;
 
-        status = parse_vector(file, "dif:", triangle->vertices[v].color_diffuse);
+        status = parse_vec3(file, "dif:", triangle->vertices[v].color_diffuse);
         if (status != PARSE_SUCCESS) return status;
 
-        status = parse_vector(file, "spe:", triangle->vertices[v].color_specular);
+        status = parse_vec3(file, "spe:", triangle->vertices[v].color_specular);
         if (status != PARSE_SUCCESS) return status;
 
         status = parse_double(file, "shi:", &triangle->vertices[v].shine);
@@ -210,14 +210,14 @@ ParseStatus parse_double(FILE* file, char* type, double* d)
 
 // Parses values comprised of 3 doubles 
 // Pass file, expected type (eg. "rad:") given file formatting rules (check README), and value array
-ParseStatus parse_vector(FILE* file, char* type, double v[3])
+ParseStatus parse_vec3(FILE* file, char* type, Vec3 v)
 {
     char str[50];
     fscanf(file, "%s", str);
     ParseStatus status = validate_type(type, str);
     if (status != PARSE_SUCCESS) return status;
 
-    if (fscanf(file, "%lf %lf %lf", &v[0], &v[1], &v[2]) != 3) return MISSING_VALUES;
+    if (fscanf(file, "%lf %lf %lf", &v.x, &v.y, &v.z) != 3) return MISSING_VALUES;
 
     return PARSE_SUCCESS;
 }
@@ -233,9 +233,9 @@ ParseStatus validate_type(char* expected, char* actual)
 
 ParseStatus validate_light(Light* light) 
 {
-    if (light->color[0] < 0 || light->color[0] > 1 || 
-        light->color[1] < 0 || light->color[1] > 1 || 
-        light->color[2] < 0 || light->color[2] > 1) {
+    if (light->color.x < 0 || light->color.x > 1 || 
+        light->color.y < 0 || light->color.y > 1 || 
+        light->color.z < 0 || light->color.z > 1) {
             return VALUE_OUT_OF_BOUNDS;
         }
     return PARSE_SUCCESS;
@@ -244,12 +244,12 @@ ParseStatus validate_light(Light* light)
 ParseStatus validate_sphere(Sphere* sphere) 
 {
     if (sphere->radius < 0 || sphere->shine < 0 || sphere->shine > 1 ||
-        sphere->color_diffuse[0] < 0 || sphere->color_diffuse[0] > 1 ||
-        sphere->color_diffuse[1] < 0 || sphere->color_diffuse[1] > 1 ||
-        sphere->color_diffuse[2] < 0 || sphere->color_diffuse[2] > 1 ||
-        sphere->color_specular[0] < 0 || sphere->color_specular[0] > 1 ||
-        sphere->color_specular[1] < 0 || sphere->color_specular[1] > 1 ||
-        sphere->color_specular[2] < 0 || sphere->color_specular[2] > 1) 
+        sphere->color_diffuse.x < 0 || sphere->color_diffuse.x > 1 ||
+        sphere->color_diffuse.y < 0 || sphere->color_diffuse.y > 1 ||
+        sphere->color_diffuse.z < 0 || sphere->color_diffuse.z > 1 ||
+        sphere->color_specular.x < 0 || sphere->color_specular.x > 1 ||
+        sphere->color_specular.y < 0 || sphere->color_specular.y > 1 ||
+        sphere->color_specular.z < 0 || sphere->color_specular.z > 1) 
     {
         return VALUE_OUT_OF_BOUNDS;
     }
@@ -260,12 +260,12 @@ ParseStatus validate_triangle(Triangle* triangle)
 {
     for (int i=0; i<3; i++) {
         if (triangle->vertices[i].shine < 0 || triangle->vertices[i].shine > 1 ||
-            triangle->vertices[i].color_diffuse[0] < 0 || triangle->vertices[i].color_diffuse[0] > 1 ||
-            triangle->vertices[i].color_diffuse[1] < 0 || triangle->vertices[i].color_diffuse[1] > 1 ||
-            triangle->vertices[i].color_diffuse[2] < 0 || triangle->vertices[i].color_diffuse[2] > 1 ||
-            triangle->vertices[i].color_specular[0] < 0 || triangle->vertices[i].color_specular[0] > 1 ||
-            triangle->vertices[i].color_specular[1] < 0 || triangle->vertices[i].color_specular[1] > 1 ||
-            triangle->vertices[i].color_specular[2] < 0 || triangle->vertices[i].color_specular[2] > 1) 
+            triangle->vertices[i].color_diffuse.x < 0 || triangle->vertices[i].color_diffuse.x > 1 ||
+            triangle->vertices[i].color_diffuse.y < 0 || triangle->vertices[i].color_diffuse.y > 1 ||
+            triangle->vertices[i].color_diffuse.z < 0 || triangle->vertices[i].color_diffuse.z > 1 ||
+            triangle->vertices[i].color_specular.x < 0 || triangle->vertices[i].color_specular.x > 1 ||
+            triangle->vertices[i].color_specular.y < 0 || triangle->vertices[i].color_specular.y > 1 ||
+            triangle->vertices[i].color_specular.z < 0 || triangle->vertices[i].color_specular.z > 1) 
         {
             return VALUE_OUT_OF_BOUNDS;
         }
