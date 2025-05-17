@@ -160,7 +160,7 @@ ParseStatus parse_sphere(FILE* file, Sphere* sphere)
     status = parse_vec3(file, "spe:", sphere->color_specular);
     if (status != PARSE_SUCCESS) return status;
 
-    status = parse_double(file, "shi:", &sphere->shine);
+    status = parse_double(file, "shi:", &sphere->shininess);
     if (status != PARSE_SUCCESS) return status;
 
     status = validate_sphere(sphere);
@@ -185,7 +185,7 @@ ParseStatus parse_triangle(FILE* file, Triangle* triangle)
         status = parse_vec3(file, "spe:", triangle->vertices[v].color_specular);
         if (status != PARSE_SUCCESS) return status;
 
-        status = parse_double(file, "shi:", &triangle->vertices[v].shine);
+        status = parse_double(file, "shi:", &triangle->vertices[v].shininess);
         if (status != PARSE_SUCCESS) return status;
     }
     status = validate_triangle(triangle);
@@ -243,7 +243,7 @@ ParseStatus validate_light(Light* light)
 
 ParseStatus validate_sphere(Sphere* sphere) 
 {
-    if (sphere->radius < 0 || sphere->shine < 0 || sphere->shine > 1 ||
+    if (sphere->radius < 0 || sphere->shininess < 0 || sphere->shininess > 1 ||
         sphere->color_diffuse.x < 0 || sphere->color_diffuse.x > 1 ||
         sphere->color_diffuse.y < 0 || sphere->color_diffuse.y > 1 ||
         sphere->color_diffuse.z < 0 || sphere->color_diffuse.z > 1 ||
@@ -259,7 +259,7 @@ ParseStatus validate_sphere(Sphere* sphere)
 ParseStatus validate_triangle(Triangle* triangle) 
 {
     for (int i=0; i<3; i++) {
-        if (triangle->vertices[i].shine < 0 || triangle->vertices[i].shine > 1 ||
+        if (triangle->vertices[i].shininess < 0 || triangle->vertices[i].shininess > 1 ||
             triangle->vertices[i].color_diffuse.x < 0 || triangle->vertices[i].color_diffuse.x > 1 ||
             triangle->vertices[i].color_diffuse.y < 0 || triangle->vertices[i].color_diffuse.y > 1 ||
             triangle->vertices[i].color_diffuse.z < 0 || triangle->vertices[i].color_diffuse.z > 1 ||

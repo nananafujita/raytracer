@@ -26,6 +26,14 @@ static inline double dot(Vec3 a, Vec3 b) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
+static inline Vec3 cross(Vec3 a, Vec3 b) {
+    return (Vec3){  
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x
+    };
+}
+
 static inline Vec3 multiply(double t, Vec3 v) {
     return (Vec3){t * v.x, t * v.y, t * v.z};
 }
@@ -42,6 +50,14 @@ static inline double max(double a, double b) {
 static inline double min(double a, double b) {
     if (a < b)  return a;
     else        return b;
+}
+
+static inline double length(Vec3 a) {
+    return sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+}
+
+static inline Vec3 interpolate(const Vec3 barycentric_coordinates, const Vec3 a, const Vec3 b, const Vec3 c) {
+    return add(add(multiply(barycentric_coordinates.x, a), multiply(barycentric_coordinates.y, b)), multiply(barycentric_coordinates.z, c));
 }
 
 

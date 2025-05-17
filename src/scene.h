@@ -29,7 +29,7 @@ typedef struct Sphere {
     double radius;
     Vec3 color_diffuse;
     Vec3 color_specular;
-    double shine;
+    double shininess;
 } Sphere;
 
 typedef struct TriangleVertex {
@@ -37,7 +37,7 @@ typedef struct TriangleVertex {
     Vec3 normal;
     Vec3 color_diffuse;
     Vec3 color_specular;
-    double shine;
+    double shininess;
 } TriangleVertex;
 
 typedef struct Triangle {
