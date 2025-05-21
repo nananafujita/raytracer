@@ -6,7 +6,7 @@
 Light lights[MAX_LIGHTS];
 Triangle triangles[MAX_TRIANGLES];
 Sphere spheres[MAX_SPHERES];
-Vec3 ambient_light;
+double ambient_light[3];
 
 int num_spheres = 0;
 int num_triangles = 0;
@@ -210,14 +210,14 @@ ParseStatus parse_double(FILE* file, char* type, double* d)
 
 // Parses values comprised of 3 doubles 
 // Pass file, expected type (eg. "rad:") given file formatting rules (check README), and value array
-ParseStatus parse_vec3(FILE* file, char* type, Vec3 v)
+ParseStatus parse_vec3(FILE* file, char* type, double v[3])
 {
     char str[50];
     fscanf(file, "%s", str);
     ParseStatus status = validate_type(type, str);
     if (status != PARSE_SUCCESS) return status;
 
-    if (fscanf(file, "%lf %lf %lf", &v.x, &v.y, &v.z) != 3) return MISSING_VALUES;
+    if (fscanf(file, "%lf %lf %lf", &v[0], &v[1], &v[2]) != 3) return MISSING_VALUES;
 
     return PARSE_SUCCESS;
 }
@@ -233,9 +233,9 @@ ParseStatus validate_type(char* expected, char* actual)
 
 ParseStatus validate_light(Light* light) 
 {
-    if (light->color.x < 0 || light->color.x > 1 || 
-        light->color.y < 0 || light->color.y > 1 || 
-        light->color.z < 0 || light->color.z > 1) {
+    if (light->color[0] < 0 || light->color[0] > 1 || 
+        light->color[1] < 0 || light->color[1] > 1 || 
+        light->color[2] < 0 || light->color[2] > 1) {
             return VALUE_OUT_OF_BOUNDS;
         }
     return PARSE_SUCCESS;
@@ -244,12 +244,12 @@ ParseStatus validate_light(Light* light)
 ParseStatus validate_sphere(Sphere* sphere) 
 {
     if (sphere->radius < 0 || sphere->shininess < 0 || sphere->shininess > 1 ||
-        sphere->color_diffuse.x < 0 || sphere->color_diffuse.x > 1 ||
-        sphere->color_diffuse.y < 0 || sphere->color_diffuse.y > 1 ||
-        sphere->color_diffuse.z < 0 || sphere->color_diffuse.z > 1 ||
-        sphere->color_specular.x < 0 || sphere->color_specular.x > 1 ||
-        sphere->color_specular.y < 0 || sphere->color_specular.y > 1 ||
-        sphere->color_specular.z < 0 || sphere->color_specular.z > 1) 
+        sphere->color_diffuse[0] < 0 || sphere->color_diffuse[0] > 1 ||
+        sphere->color_diffuse[1] < 0 || sphere->color_diffuse[1] > 1 ||
+        sphere->color_diffuse[2] < 0 || sphere->color_diffuse[2] > 1 ||
+        sphere->color_specular[0] < 0 || sphere->color_specular[0] > 1 ||
+        sphere->color_specular[1] < 0 || sphere->color_specular[1] > 1 ||
+        sphere->color_specular[2] < 0 || sphere->color_specular[2] > 1) 
     {
         return VALUE_OUT_OF_BOUNDS;
     }
@@ -260,12 +260,12 @@ ParseStatus validate_triangle(Triangle* triangle)
 {
     for (int i=0; i<3; i++) {
         if (triangle->vertices[i].shininess < 0 || triangle->vertices[i].shininess > 1 ||
-            triangle->vertices[i].color_diffuse.x < 0 || triangle->vertices[i].color_diffuse.x > 1 ||
-            triangle->vertices[i].color_diffuse.y < 0 || triangle->vertices[i].color_diffuse.y > 1 ||
-            triangle->vertices[i].color_diffuse.z < 0 || triangle->vertices[i].color_diffuse.z > 1 ||
-            triangle->vertices[i].color_specular.x < 0 || triangle->vertices[i].color_specular.x > 1 ||
-            triangle->vertices[i].color_specular.y < 0 || triangle->vertices[i].color_specular.y > 1 ||
-            triangle->vertices[i].color_specular.z < 0 || triangle->vertices[i].color_specular.z > 1) 
+            triangle->vertices[i].color_diffuse[0] < 0 || triangle->vertices[i].color_diffuse[0] > 1 ||
+            triangle->vertices[i].color_diffuse[1] < 0 || triangle->vertices[i].color_diffuse[1] > 1 ||
+            triangle->vertices[i].color_diffuse[2] < 0 || triangle->vertices[i].color_diffuse[2] > 1 ||
+            triangle->vertices[i].color_specular[0] < 0 || triangle->vertices[i].color_specular[0] > 1 ||
+            triangle->vertices[i].color_specular[1] < 0 || triangle->vertices[i].color_specular[1] > 1 ||
+            triangle->vertices[i].color_specular[2] < 0 || triangle->vertices[i].color_specular[2] > 1) 
         {
             return VALUE_OUT_OF_BOUNDS;
         }

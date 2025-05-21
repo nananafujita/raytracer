@@ -2,7 +2,7 @@
 #define SCENE_LOADER_H
 
 #include <stdio.h>
-#include "vec3.h"
+#include "math3d.h"
 
 #define MAX_TRIANGLES 20000
 #define MAX_SPHERES 100
@@ -20,23 +20,23 @@ typedef enum {
 } ParseStatus;
 
 typedef struct Light {
-    Vec3 position;
-    Vec3 color;
+    double position[3];
+    double color[3];
 } Light;
 
 typedef struct Sphere {
-    Vec3 position;
+    double position[3];
     double radius;
-    Vec3 color_diffuse;
-    Vec3 color_specular;
+    double color_diffuse[3];
+    double color_specular[3];
     double shininess;
 } Sphere;
 
 typedef struct TriangleVertex {
-    Vec3 position;
-    Vec3 normal;
-    Vec3 color_diffuse;
-    Vec3 color_specular;
+    double position[3];
+    double normal[3];
+    double color_diffuse[3];
+    double color_specular[3];
     double shininess;
 } TriangleVertex;
 
@@ -47,7 +47,7 @@ typedef struct Triangle {
 extern Light lights[MAX_LIGHTS];
 extern Triangle triangles[MAX_TRIANGLES];
 extern Sphere spheres[MAX_SPHERES];
-extern Vec3 ambient_light;
+extern double ambient_light[3];
 extern int num_lights;
 extern int num_triangles;
 extern int num_spheres;
@@ -60,7 +60,7 @@ ParseStatus parse_sphere(FILE* file, Sphere* sphere);
 ParseStatus parse_triangle(FILE* file, Triangle* triangle);
 
 ParseStatus parse_double(FILE* file, char* type, double* d);
-ParseStatus parse_vec3(FILE* file, char* type, Vec3 v);
+ParseStatus parse_vec3(FILE* file, char* type, double v[3]);
 ParseStatus validate_type(char* expected, char* actual);
 
 ParseStatus validate_light(Light* light);

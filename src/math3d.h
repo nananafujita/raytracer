@@ -1,5 +1,5 @@
-#ifndef double_H
-#define double_H
+#ifndef MATH3D_H
+#define MATH3D_H
 
 #include <math.h>
 
@@ -61,9 +61,15 @@ static inline double squared_length(const double a[3]) {
     return a[0] * a[0] + a[1] * a[1] + a[2] * a[2];
 }
 
-static inline void interpolate(const double barycentric_coordinates[3], const double a, const double b, const double c, double result[3]) {
-    return add(add(multiply(barycentric_coordinates[0], a), multiply(barycentric_coordinates[1], b)), multiply(barycentric_coordinates[2], c));
+static inline void interpolate(const double barycentric_coordinates[3], const double a[3], const double b[3], const double c[3], double result[3]) {
+    double u[3];
+    double v[3];
+    double w[3];
+    multiply(a, barycentric_coordinates[0], u);
+    multiply(b, barycentric_coordinates[1], v);
+    multiply(c, barycentric_coordinates[2], w);
+    add(u, v, result);
+    add(result, w, result);
 }
-
 
 #endif
