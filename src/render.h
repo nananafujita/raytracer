@@ -15,6 +15,7 @@ typedef struct Pixel {
     double shininess;
 } Pixel;
 
+void render();
 int hit_sphere(Sphere sphere, double origin[3], double direction[3], double hit_point[3], double hit_normal[3]);
 int hit_triangle(Triangle triangle, double origin[3], double direction[3], double hit_point[3], double triangle_normal[3], double barycentric[3]);
 void define_pixel(int is_sphere, int index, double hit_point[3], double hit_normal[3], double hit_barycentric[3], Pixel* pixel);
