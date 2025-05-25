@@ -96,10 +96,10 @@ int load_scene(char* filename)
     return 0;
 }
 
-void parse_error(ParseStatus status, int object_number)
+void parse_error(ParseStatus status, int idx)
 {
-    if (status != PARSE_SUCCESS && object_number > 0) {
-        fprintf(stderr, "Error parsing file on object #%i: ", object_number);
+    if (status != PARSE_SUCCESS && idx > 0) {
+        fprintf(stderr, "Error parsing file on object #%i: ", idx);
     }
     switch(status) {
         case PARSE_SUCCESS:
@@ -135,7 +135,7 @@ ParseStatus parse_light(FILE* file, Light* light)
 {
     ParseStatus status;
     
-    status = parse_vec3(file, "pos:", light->position);
+    status = parse_vec3(file, "pos:", light->pos);
     if (status != PARSE_SUCCESS) return status;
     status = parse_vec3(file, "col:", light->color);
     if (status != PARSE_SUCCESS) return status;
@@ -148,16 +148,16 @@ ParseStatus parse_light(FILE* file, Light* light)
 ParseStatus parse_sphere(FILE* file, Sphere* sphere)
 {
     ParseStatus status;
-    status = parse_vec3(file, "pos:", sphere->position);
+    status = parse_vec3(file, "pos:", sphere->pos);
     if (status != PARSE_SUCCESS) return status;
 
     status = parse_double(file, "rad:", &sphere->radius);
     if (status != PARSE_SUCCESS) return status;
 
-    status = parse_vec3(file, "dif:", sphere->color_diffuse);
+    status = parse_vec3(file, "dif:", sphere->diffuse);
     if (status != PARSE_SUCCESS) return status;
 
-    status = parse_vec3(file, "spe:", sphere->color_specular);
+    status = parse_vec3(file, "spe:", sphere->specular);
     if (status != PARSE_SUCCESS) return status;
 
     status = parse_double(file, "shi:", &sphere->shininess);
@@ -173,16 +173,16 @@ ParseStatus parse_triangle(FILE* file, Triangle* triangle)
 {
     ParseStatus status;
     for (int v=0; v<3; v++) {
-        status = parse_vec3(file, "pos:", triangle->vertices[v].position);
+        status = parse_vec3(file, "pos:", triangle->vertices[v].pos);
         if (status != PARSE_SUCCESS) return status;
 
         status = parse_vec3(file, "nor:", triangle->vertices[v].normal);
         if (status != PARSE_SUCCESS) return status;
 
-        status = parse_vec3(file, "dif:", triangle->vertices[v].color_diffuse);
+        status = parse_vec3(file, "dif:", triangle->vertices[v].diffuse);
         if (status != PARSE_SUCCESS) return status;
 
-        status = parse_vec3(file, "spe:", triangle->vertices[v].color_specular);
+        status = parse_vec3(file, "spe:", triangle->vertices[v].specular);
         if (status != PARSE_SUCCESS) return status;
 
         status = parse_double(file, "shi:", &triangle->vertices[v].shininess);
@@ -244,12 +244,12 @@ ParseStatus validate_light(Light* light)
 ParseStatus validate_sphere(Sphere* sphere) 
 {
     if (sphere->radius < 0 || sphere->shininess < 0 || sphere->shininess > 1 ||
-        sphere->color_diffuse[0] < 0 || sphere->color_diffuse[0] > 1 ||
-        sphere->color_diffuse[1] < 0 || sphere->color_diffuse[1] > 1 ||
-        sphere->color_diffuse[2] < 0 || sphere->color_diffuse[2] > 1 ||
-        sphere->color_specular[0] < 0 || sphere->color_specular[0] > 1 ||
-        sphere->color_specular[1] < 0 || sphere->color_specular[1] > 1 ||
-        sphere->color_specular[2] < 0 || sphere->color_specular[2] > 1) 
+        sphere->diffuse[0] < 0 || sphere->diffuse[0] > 1 ||
+        sphere->diffuse[1] < 0 || sphere->diffuse[1] > 1 ||
+        sphere->diffuse[2] < 0 || sphere->diffuse[2] > 1 ||
+        sphere->specular[0] < 0 || sphere->specular[0] > 1 ||
+        sphere->specular[1] < 0 || sphere->specular[1] > 1 ||
+        sphere->specular[2] < 0 || sphere->specular[2] > 1) 
     {
         return VALUE_OUT_OF_BOUNDS;
     }
@@ -260,12 +260,12 @@ ParseStatus validate_triangle(Triangle* triangle)
 {
     for (int i=0; i<3; i++) {
         if (triangle->vertices[i].shininess < 0 || triangle->vertices[i].shininess > 1 ||
-            triangle->vertices[i].color_diffuse[0] < 0 || triangle->vertices[i].color_diffuse[0] > 1 ||
-            triangle->vertices[i].color_diffuse[1] < 0 || triangle->vertices[i].color_diffuse[1] > 1 ||
-            triangle->vertices[i].color_diffuse[2] < 0 || triangle->vertices[i].color_diffuse[2] > 1 ||
-            triangle->vertices[i].color_specular[0] < 0 || triangle->vertices[i].color_specular[0] > 1 ||
-            triangle->vertices[i].color_specular[1] < 0 || triangle->vertices[i].color_specular[1] > 1 ||
-            triangle->vertices[i].color_specular[2] < 0 || triangle->vertices[i].color_specular[2] > 1) 
+            triangle->vertices[i].diffuse[0] < 0 || triangle->vertices[i].diffuse[0] > 1 ||
+            triangle->vertices[i].diffuse[1] < 0 || triangle->vertices[i].diffuse[1] > 1 ||
+            triangle->vertices[i].diffuse[2] < 0 || triangle->vertices[i].diffuse[2] > 1 ||
+            triangle->vertices[i].specular[0] < 0 || triangle->vertices[i].specular[0] > 1 ||
+            triangle->vertices[i].specular[1] < 0 || triangle->vertices[i].specular[1] > 1 ||
+            triangle->vertices[i].specular[2] < 0 || triangle->vertices[i].specular[2] > 1) 
         {
             return VALUE_OUT_OF_BOUNDS;
         }

@@ -48,10 +48,12 @@ void display()
             double hit_point[3];
             double hit_normal[3];
             double hit_barycentric[3];
+
+            double intensity[3] = {ambient_light[0], ambient_light[1], ambient_light[2]};
             for (int s=0; s<num_spheres; s++) {
-                if (hit_sphere(spheres[s], origin, direction, hit_point, hit_normal) == 0) {
+                if (hit_sphere(spheres[s], origin, direction, hit_point, hit_normal)) {
                     if (intersected != 0 || squared_length(hit_point) < closest_dist) { // camera is at origin, so we can do length() directly
-                        closest_is_sphere = 0;
+                        closest_is_sphere = 1;
                         closest_index = s;
                         for (int k=0; k<3; k++) {   
                             closest_point[k] = hit_point[k];
@@ -64,9 +66,9 @@ void display()
                 }
             }
             for (int t=0; t<num_triangles; t++) {
-                if (hit_triangle(triangles[t], origin, direction, hit_point, hit_normal, hit_barycentric) == 0) {
+                if (hit_triangle(triangles[t], origin, direction, hit_point, hit_normal, hit_barycentric)) {
                     if (intersected != 0 || squared_length(hit_point) < closest_dist) {
-                        closest_is_sphere = -1;
+                        closest_is_sphere = 0;
                         closest_index = t;
                         for (int k=0; k<3; k++) {   
                             closest_point[k] = hit_point[k];
@@ -82,6 +84,7 @@ void display()
             if (intersected == 0) {
                 struct Pixel p;
                 closest_pixel(closest_is_sphere, closest_index, closest_point, closest_normal, closest_barycentric, &p);
+                apply_shadow(&p, intensity);
             }
         }
     }

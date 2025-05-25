@@ -20,23 +20,23 @@ typedef enum {
 } ParseStatus;
 
 typedef struct Light {
-    double position[3];
+    double pos[3];
     double color[3];
 } Light;
 
 typedef struct Sphere {
-    double position[3];
+    double pos[3];
     double radius;
-    double color_diffuse[3];
-    double color_specular[3];
+    double diffuse[3];
+    double specular[3];
     double shininess;
 } Sphere;
 
 typedef struct TriangleVertex {
-    double position[3];
+    double pos[3];
     double normal[3];
-    double color_diffuse[3];
-    double color_specular[3];
+    double diffuse[3];
+    double specular[3];
     double shininess;
 } TriangleVertex;
 

@@ -7,69 +7,67 @@
 int hit_sphere(Sphere sphere, double origin[3], double direction[3], double hit_point[3], double hit_normal[3])
 {
     double origin_sphere[3];
-    subtract(origin, sphere.position, origin_sphere);
+    subtract(origin, sphere.pos, origin_sphere);
 
-    double a = 1.0;
+    // a = 1.0
     double b = 2.0 * dot(direction, origin_sphere);
     double c = dot(origin_sphere, origin_sphere) - pow(sphere.radius, 2.0);
 
     // calculate discriminant
     double discriminant = pow(b, 2) - 4.0 * c;
-    if (discriminant < 0) return -1;
+    if (discriminant < 0) return 0;
 
     double t0 = (-b - sqrt(discriminant)) / 2.0;
     double t1 = (-b + sqrt(discriminant)) / 2.0;
 
     // sphere is behind ray
-    if (t0 <= 0 && t1 <= 0) return -1;
+    if (t0 <= 0 && t1 <= 0) return 0;
 
-    double t_intersect = min(t0, t1);
+    double t_intersect = fmin(t0, t1);
     int normal_direction = 1;
 
     if (t_intersect <= 0) {
-        t_intersect = max(t0, t1);
+        t_intersect = fmax(t0, t1);
         normal_direction = -1;
     }
     multiply(direction, t_intersect, hit_point);
     add(origin, hit_point, hit_point);
 
-    subtract(hit_point, sphere.position, hit_normal);
+    subtract(hit_point, sphere.pos, hit_normal);
     normalize(hit_normal);
 
     if (normal_direction < 0)  multiply(hit_normal, -1.0, hit_normal);
-    return 0;
+    return 1;
 }
 
 // Ray-Plane intersection using the plane equation: ax_by+cz+d=0
 int hit_triangle(Triangle triangle, double origin[3], double direction[3], double hit_point[3], double triangle_normal[3], double barycentric[3]) {
     // identify normal of the plane one which the triangle lies
     double v01[3]; 
-    subtract(triangle.vertices[1].position, triangle.vertices[0].position, v01);
+    subtract(triangle.vertices[1].pos, triangle.vertices[0].pos, v01);
     double v02[3]; 
-    subtract(triangle.vertices[2].position, triangle.vertices[0].position, v02);
+    subtract(triangle.vertices[2].pos, triangle.vertices[0].pos, v02);
     cross(v01, v02, triangle_normal);
-
-    double area = length(triangle_normal) / 2.0;
     normalize(triangle_normal);
 
     // plane is parallel to camera ray; not visible.
-    if (fabs(dot(triangle_normal, direction)) < EPSILON) return -1;
+    if (fabs(dot(triangle_normal, direction)) < EPSILON) return 0;
     
     // definition of a plane: ax+by+cz+d
     // a, b, c defined by hit_normal
-    double d = -dot(triangle_normal, triangle.vertices[0].position);
+    double d = -dot(triangle_normal, triangle.vertices[0].pos);
 
     // value of t along the ray that hits the plane 
     // if t <= 0, the plane is behind or at the camera; not visible
     double t_intersect = -(dot(triangle_normal, origin) + d) / dot(triangle_normal, direction);
-    if (t_intersect <= 0) return -1;
+    if (t_intersect <= 0) return 0;
 
     multiply(direction, t_intersect, hit_point);
     add(origin, hit_point, hit_point);
 
     // find barycentric coordinates to determine if hit point is inside triangle
     double v0hP[3];
-    subtract(hit_point, triangle.vertices[0].position, v0hP);
+    subtract(hit_point, triangle.vertices[0].pos, v0hP);
 
     double dot0101 = dot(v01, v01);
     double dot0102 = dot(v01, v02);
@@ -82,38 +80,105 @@ int hit_triangle(Triangle triangle, double origin[3], double direction[3], doubl
     barycentric[2] = 1.0 - barycentric[0] - barycentric[1];
     if (barycentric[0] < -EPSILON || barycentric[1] < -EPSILON || barycentric[2] < -EPSILON ||
         barycentric[0] > 1.0 + EPSILON || barycentric[1] > 1.0 + EPSILON || barycentric[2] > 1.0 + EPSILON) {
-            return -1;
+            return 0;
     }
     
-    return 0;
+    return 1;
 }
 
-void closest_pixel(int is_sphere, int index, double hit_point[3], double hit_normal[3], double hit_barycentric[3], struct Pixel* pixel)
+void define_pixel(int is_sphere, int idx, double hit_point[3], double hit_normal[3], double hit_barycentric[3], struct Pixel* p)
 {
-    pixel->position[0] = hit_point[0];      pixel->position[1] = hit_point[1];      pixel->position[2] = hit_point[2];
-    pixel->color[0] = ambient_light[0];        pixel->color[1] = ambient_light[1];        pixel->color[2] = ambient_light[2];
+    p->is_sphere = is_sphere;
+    p->idx = idx;
+    p->pos[0] = hit_point[0];           p->pos[1] = hit_point[1];           p->pos[2] = hit_point[2];
+    p->color[0] = ambient_light[0];     p->color[1] = ambient_light[1];     p->color[2] = ambient_light[2];
     if (is_sphere == 0) {
         for (int i=0; i<3; i++) {
-            pixel->normal[i] = hit_normal[i];
-            pixel->diffuse[i] = spheres[index].color_diffuse[i];
-            pixel->specular[i] = spheres[index].color_specular[i];
-            pixel->barycentric[i] = -1.0;
+            p->normal[i] = hit_normal[i];
+            p->diffuse[i] = spheres[idx].diffuse[i];
+            p->specular[i] = spheres[idx].specular[i];
+            p->bary[i] = -1.0;
         }
-        pixel->shininess = spheres[index].shininess;
+        p->shininess = spheres[idx].shininess;
     } else {
-        interpolate(hit_barycentric, triangles[index].vertices[0].normal, triangles[index].vertices[1].normal, triangles[index].vertices[2].normal, pixel->normal);
-        normalize(pixel->normal);
-        interpolate(hit_barycentric, triangles[index].vertices[0].color_diffuse, triangles[index].vertices[1].color_diffuse, triangles[index].vertices[2].color_diffuse, pixel->diffuse);
-        interpolate(hit_barycentric, triangles[index].vertices[0].color_specular, triangles[index].vertices[1].color_specular, triangles[index].vertices[2].color_specular, pixel->specular);
+        interpolate(hit_barycentric, triangles[idx].vertices[0].normal, triangles[idx].vertices[1].normal, triangles[idx].vertices[2].normal, p->normal);
+        normalize(p->normal);
+        interpolate(hit_barycentric, triangles[idx].vertices[0].diffuse, triangles[idx].vertices[1].diffuse, triangles[idx].vertices[2].diffuse, p->diffuse);
+        interpolate(hit_barycentric, triangles[idx].vertices[0].specular, triangles[idx].vertices[1].specular, triangles[idx].vertices[2].specular, p->specular);
 
-        pixel->barycentric[0] = hit_barycentric[0]; 
-        pixel->barycentric[1] = hit_barycentric[1]; 
-        pixel->barycentric[2] = hit_barycentric[2]; 
+        p->bary[0] = hit_barycentric[0];    p->bary[1] = hit_barycentric[1];   p->bary[2] = hit_barycentric[2]; 
 
-        pixel->shininess = (hit_barycentric[2] * triangles[index].vertices[0].shininess) + (hit_barycentric[0] * triangles[index].vertices[1].shininess) + (hit_barycentric[1] * triangles[index].vertices[2].shininess);
-        // check the index numbers
+        p->shininess = (hit_barycentric[0] * triangles[idx].vertices[0].shininess) + 
+                        (hit_barycentric[1] * triangles[idx].vertices[1].shininess) + 
+                        (hit_barycentric[2] * triangles[idx].vertices[2].shininess);
     }
 }
 
-void apply_shadow()
-{}
+// applying phong reflection model
+void calculate_intensity(Light* l, Pixel* p, double light_dir[3], double intensity[3])
+{
+    double LdotN = dot(light_dir, p->normal);
+    LdotN = max(0.0, LdotN);
+    double reflect[3];
+    for (int i=0; i<3; i++) {
+        reflect[i] = 2.0 * LdotN * p->normal[i] - light_dir[i];
+    }
+    normalize(reflect);
+
+    double v[3] = {-p->pos[0], -p->pos[1], -p->pos[2]};
+    double RdotV = dot(reflect, v);
+    RdotV = max(0.0, RdotV);
+    for(int i=0; i<3; i++) {
+        intensity[i] += l->color[i] * ((p->diffuse[i] * LdotN) + (p->specular[i] * pow(RdotV, p->shininess)));
+    }
+}
+
+void apply_shadow(Pixel* p, double intensity[3])
+{
+    double view_direction[3] = {-p->pos[0], -p->pos[1], -p->pos[2]};
+    normalize(view_direction);
+
+    for (int l=0; l<num_lights; l++) {
+        double light_direction[3];
+        double light_dist_squared;
+        subtract(lights[l].pos, p->pos, light_direction);
+        light_dist_squared = squared_length(light_direction);
+        normalize(light_direction);
+
+        int has_sphere_shadow = 0;
+        int has_triangle_shadow = 0;
+        for (int s=0; s<num_spheres; s++) {
+            if (p->is_sphere && s == p->idx) continue;
+            double obstacle_hit_point[3];
+            double obstacle_normal[3];
+            if (hit_sphere(spheres[s], p->pos, light_direction, obstacle_hit_point, obstacle_normal)) {
+                double hit_point_to_obstacle[3];
+                subtract(obstacle_hit_point, p->pos, hit_point_to_obstacle);
+                if (light_dist_squared - squared_length(hit_point_to_obstacle) > EPSILON) {
+                    has_sphere_shadow = 1;
+                    break;
+                }
+            }
+        }
+        if (has_sphere_shadow) continue;
+
+        for (int t=0; t<num_triangles; t++) {
+            if (!p->is_sphere && t == p->idx) continue;
+            double obstacle_hit_point[3];
+            double obstacle_normal[3];
+            double obstacle_barycentric[3];
+            if (hit_triangle(triangles[t], p->pos, light_direction, obstacle_hit_point, obstacle_normal, obstacle_barycentric)){
+                double hit_point_to_obstacle[3];
+                subtract(obstacle_hit_point, p->pos, hit_point_to_obstacle);
+                if (light_dist_squared - squared_length(hit_point_to_obstacle) > EPSILON) {
+                    has_triangle_shadow = 1;
+                    break;
+                }
+            }
+        }
+
+        if (!has_sphere_shadow && !has_triangle_shadow) {
+            calculate_intensity(&lights[l], p, light_direction, intensity);
+        }
+    }
+}
