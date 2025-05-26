@@ -1,5 +1,5 @@
-#ifndef SCENE_LOADER_H
-#define SCENE_LOADER_H
+#ifndef SCENE_H
+#define SCENE_H
 
 #include <stdio.h>
 #include "math3d.h"
@@ -43,12 +43,6 @@ typedef struct TriangleVertex {
 typedef struct Triangle {
     TriangleVertex vertices[3];
 } Triangle;
-
-typedef struct Vec3 {
-    double x;
-    double y;
-    double z;
-} Vec3;
 
 extern Light lights[MAX_LIGHTS];
 extern Triangle triangles[MAX_TRIANGLES];

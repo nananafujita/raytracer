@@ -18,7 +18,7 @@ add_subdirectory(external/glfw)
 include_directories(${OPENGL_INCLUDE_DIR})
 
 # Create executable
-add_executable(raytracer src/main.c src/scene.c)
+add_executable(raytracer src/main.c src/scene.c src/render.c)
 
 # Link libraries to the executable
 target_link_libraries(raytracer OpenGL::GL glfw)

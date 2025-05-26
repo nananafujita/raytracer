@@ -1,7 +1,4 @@
 #include "render.h"
-#include "macros.h"
-
-Vec3 intensities[WIDTH][HEIGHT];
 
 // using analytic method of testing whether the ray and sphere intersect
 // direction must be normalized
@@ -185,7 +182,7 @@ void apply_shadow(Pixel* p, double intensity[3])
 }
 
 
-void render()
+void render(Vec3* intensities)
 {
     double origin[3] = {0, 0, 0};
     double half_angle = (FOV / 2) * M_PI / 180.0;                   // angle (in radians) between center and top of image plane
@@ -261,7 +258,7 @@ void render()
                 total_intensity.y = 1.0;
                 total_intensity.z = 1.0;
             }
-            intensities[i][j] = total_intensity;
+            intensities[j + i * HEIGHT] = total_intensity;
         }
     }
 }
