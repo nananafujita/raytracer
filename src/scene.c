@@ -243,7 +243,7 @@ ParseStatus validate_light(Light* light)
 
 ParseStatus validate_sphere(Sphere* sphere) 
 {
-    if (sphere->radius < 0 || sphere->shininess < 0 || sphere->shininess > 1 ||
+    if (sphere->radius < 0 ||
         sphere->diffuse[0] < 0 || sphere->diffuse[0] > 1 ||
         sphere->diffuse[1] < 0 || sphere->diffuse[1] > 1 ||
         sphere->diffuse[2] < 0 || sphere->diffuse[2] > 1 ||
@@ -259,8 +259,7 @@ ParseStatus validate_sphere(Sphere* sphere)
 ParseStatus validate_triangle(Triangle* triangle) 
 {
     for (int i=0; i<3; i++) {
-        if (triangle->vertices[i].shininess < 0 || triangle->vertices[i].shininess > 1 ||
-            triangle->vertices[i].diffuse[0] < 0 || triangle->vertices[i].diffuse[0] > 1 ||
+        if (triangle->vertices[i].diffuse[0] < 0 || triangle->vertices[i].diffuse[0] > 1 ||
             triangle->vertices[i].diffuse[1] < 0 || triangle->vertices[i].diffuse[1] > 1 ||
             triangle->vertices[i].diffuse[2] < 0 || triangle->vertices[i].diffuse[2] > 1 ||
             triangle->vertices[i].specular[0] < 0 || triangle->vertices[i].specular[0] > 1 ||

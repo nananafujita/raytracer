@@ -143,8 +143,7 @@ void apply_shadow(Pixel* p, double intensity[3])
         light_dist_squared = squared_length(light_direction);
         normalize(light_direction);
 
-        int has_sphere_shadow = 0;
-        int has_triangle_shadow = 0;
+        int in_shadow = 0;
         for (int s=0; s<num_spheres; s++) {
             if (p->is_sphere && s == p->idx) continue;
             double obstacle_hit_point[3];
@@ -153,12 +152,12 @@ void apply_shadow(Pixel* p, double intensity[3])
                 double hit_point_to_obstacle[3];
                 subtract(obstacle_hit_point, p->pos, hit_point_to_obstacle);
                 if (light_dist_squared - squared_length(hit_point_to_obstacle) > EPSILON) {
-                    has_sphere_shadow = 1;
+                    in_shadow = 1;
                     break;
                 }
             }
         }
-        if (has_sphere_shadow) continue;
+        if (in_shadow) continue;
 
         for (int t=0; t<num_triangles; t++) {
             if (!p->is_sphere && t == p->idx) continue;
@@ -169,13 +168,13 @@ void apply_shadow(Pixel* p, double intensity[3])
                 double hit_point_to_obstacle[3];
                 subtract(obstacle_hit_point, p->pos, hit_point_to_obstacle);
                 if (light_dist_squared - squared_length(hit_point_to_obstacle) > EPSILON) {
-                    has_triangle_shadow = 1;
+                    in_shadow = 1;
                     break;
                 }
             }
         }
 
-        if (!has_sphere_shadow && !has_triangle_shadow) {
+        if (!in_shadow) {
             calculate_intensity(&lights[l], p, light_direction, intensity);
         }
     }
@@ -184,6 +183,7 @@ void apply_shadow(Pixel* p, double intensity[3])
 
 void render(Vec3* intensities)
 {
+    printf("raytracing...");
     double origin[3] = {0, 0, 0};
     double half_angle = (FOV / 2) * M_PI / 180.0;                   // angle (in radians) between center and top of image plane
     double x = (float) WIDTH / (float) HEIGHT * tan(half_angle);    // half width of image plane
@@ -192,14 +192,13 @@ void render(Vec3* intensities)
     double step_width = 2 * x / WIDTH;                              // step width on the image plane
     double step_height = 2 * y / HEIGHT;                                
 
-    struct Pixel closest_object;
     // loop through camera rays
-    for (int i=0; i<WIDTH; i++) {
-        for (int j=0; j<HEIGHT; j++) {
-            int intersected = -1;
+    for (int i=0; i<HEIGHT; i++) {
+        for (int j=0; j<WIDTH; j++) {
+            int intersected = 0;
             double closest_dist = 0.0;
 
-            double direction[3] = {i * step_width - x, j * step_height - y, z};
+            double direction[3] = {j * step_width - x, i * step_height - y, z};
             normalize(direction);
 
             int closest_is_sphere;
@@ -215,7 +214,8 @@ void render(Vec3* intensities)
             double intensity[3] = {ambient_light[0], ambient_light[1], ambient_light[2]};
             for (int s=0; s<num_spheres; s++) {
                 if (hit_sphere(spheres[s], origin, direction, hit_point, hit_normal)) {
-                    if (intersected != 0 || squared_length(hit_point) < closest_dist) { // camera is at origin, so we can do length() directly
+                    printf("sphere casting shadow\n");
+                    if (!intersected || squared_length(hit_point) < closest_dist) { // camera is at origin, so we can do length() directly
                         closest_is_sphere = 1;
                         closest_index = s;
                         for (int k=0; k<3; k++) {   
@@ -223,14 +223,14 @@ void render(Vec3* intensities)
                             closest_normal[k] = hit_normal[k];
                             closest_barycentric[k] = -1;
                         }
-                        intersected = 0;
+                        intersected = 1;
                         closest_dist = squared_length(hit_point);
                     }
                 }
             }
             for (int t=0; t<num_triangles; t++) {
                 if (hit_triangle(triangles[t], origin, direction, hit_point, hit_normal, hit_barycentric)) {
-                    if (intersected != 0 || squared_length(hit_point) < closest_dist) {
+                    if (!intersected || squared_length(hit_point) < closest_dist) {
                         closest_is_sphere = 0;
                         closest_index = t;
                         for (int k=0; k<3; k++) {   
@@ -238,27 +238,27 @@ void render(Vec3* intensities)
                             closest_normal[k] = hit_normal[k];
                             closest_barycentric[k] = hit_barycentric[k];
                         }
-                        intersected = 0;
+                        intersected = 1;
                         closest_dist = squared_length(hit_point);
                     }
                 }
             }
-            printf("%i %i\n", j, i);
-
             Vec3 total_intensity;
-            if (intersected == 0) {
+            if (intersected) {
                 Pixel p;
                 define_pixel(closest_is_sphere, closest_index, closest_point, closest_normal, closest_barycentric, &p);
                 apply_shadow(&p, intensity);
                 total_intensity.x = max(0.0, min(1.0, intensity[0]));
                 total_intensity.y = max(0.0, min(1.0, intensity[1]));
                 total_intensity.z = max(0.0, min(1.0, intensity[2]));
+                printf("%f %f %f\n", intensity[0], intensity[1], intensity[2]);
             } else {
                 total_intensity.x = 1.0;
                 total_intensity.y = 1.0;
                 total_intensity.z = 1.0;
             }
-            intensities[j + i * HEIGHT] = total_intensity;
+            intensities[i * WIDTH + j] = total_intensity;
         }
     }
+    printf("done.\n");
 }
