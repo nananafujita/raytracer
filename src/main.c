@@ -5,10 +5,11 @@
 
 #include "render.h"
 
+int drawn = 0;
+
 void init()
 {
   glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
   glOrtho(0,WIDTH,0,HEIGHT,1,-1);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -25,27 +26,30 @@ void plot_pixel(int x, int y, unsigned char r, unsigned char g, unsigned char b)
 
 void draw(Vec3* intensities)
 {
-  for(unsigned int i=0; i<HEIGHT; i++)
-  {
-    glPointSize(2.0);  
-    // Do not worry about this usage of OpenGL. This is here just so that we can draw the pixels to the screen,
-    // after their R,G,B colors were determined by the ray tracer.
-    glBegin(GL_POINTS);
-    for(unsigned int j=0; j<WIDTH; j++)
-    {
-      // A simple R,G,B output for testing purposes.
-      // Modify these R,G,B colors to the values computed by your ray tracer.
-      unsigned char r = fabs(intensities[i * WIDTH + j].x) * 255.0;
-      unsigned char g = fabs(intensities[i * WIDTH + j].y) * 255.0;
-      unsigned char b = fabs(intensities[i * WIDTH + j].z) * 255.0;
+    if (!drawn) {
+        for(unsigned int i=0; i<HEIGHT; i++)
+        {
+            glPointSize(2.0);  
+            // Do not worry about this usage of OpenGL. This is here just so that we can draw the pixels to the screen,
+            // after their R,G,B colors were determined by the ray tracer.
+            glBegin(GL_POINTS);
+            for(unsigned int j=0; j<WIDTH; j++)
+            {
+            // A simple R,G,B output for testing purposes.
+            // Modify these R,G,B colors to the values computed by your ray tracer.
+            unsigned char r = fabs(intensities[i * WIDTH + j].x) * 255.0;
+            unsigned char g = fabs(intensities[i * WIDTH + j].y) * 255.0;
+            unsigned char b = fabs(intensities[i * WIDTH + j].z) * 255.0;
 
-      plot_pixel(j, i, r, g, b);
+            plot_pixel(j, i, r, g, b);
+            }
+            glEnd();
+            glFlush();
+        }
+        printf("Ray tracing completed.\n"); 
+        fflush(stdout);
     }
-    glEnd();
-    glFlush();
-  }
-  printf("Ray tracing completed.\n"); 
-  fflush(stdout);
+    drawn = 1;
 }
 
 GLuint draw_texture(Vec3* intensities)
@@ -123,11 +127,11 @@ int main(int argc, char* argv[])
     render(intensities); 
     GLuint texture = draw_texture(intensities);
     draw(intensities);
+    glfwSwapBuffers(window);
 
     while (!glfwWindowShouldClose(window)) {
         //display_texture(texture);
-        draw(intensities);
-        glfwSwapBuffers(window);
+       // draw(intensities);
         glfwPollEvents(); 
     }
     free(intensities);

@@ -90,7 +90,7 @@ void define_pixel(int is_sphere, int idx, double hit_point[3], double hit_normal
     p->idx = idx;
     p->pos[0] = hit_point[0];           p->pos[1] = hit_point[1];           p->pos[2] = hit_point[2];
     p->color[0] = ambient_light[0];     p->color[1] = ambient_light[1];     p->color[2] = ambient_light[2];
-    if (is_sphere == 0) {
+    if (is_sphere) {
         for (int i=0; i<3; i++) {
             p->normal[i] = hit_normal[i];
             p->diffuse[i] = spheres[idx].diffuse[i];
@@ -116,6 +116,7 @@ void define_pixel(int is_sphere, int idx, double hit_point[3], double hit_normal
 void calculate_intensity(Light* l, Pixel* p, double light_dir[3], double intensity[3])
 {
     double LdotN = dot(light_dir, p->normal);
+    //printf("normal: %f %f %f\n", p->normal[0], p->normal[1], p->normal[2]);
     LdotN = max(0.0, LdotN);
     double reflect[3];
     for (int i=0; i<3; i++) {
@@ -124,11 +125,13 @@ void calculate_intensity(Light* l, Pixel* p, double light_dir[3], double intensi
     normalize(reflect);
 
     double v[3] = {-p->pos[0], -p->pos[1], -p->pos[2]};
+    normalize(v);
     double RdotV = dot(reflect, v);
     RdotV = max(0.0, RdotV);
     for(int i=0; i<3; i++) {
         intensity[i] += l->color[i] * ((p->diffuse[i] * LdotN) + (p->specular[i] * pow(RdotV, p->shininess)));
     }
+    printf("%f %f\n", LdotN, RdotV);
 }
 
 void apply_shadow(Pixel* p, double intensity[3])
@@ -214,7 +217,6 @@ void render(Vec3* intensities)
             double intensity[3] = {ambient_light[0], ambient_light[1], ambient_light[2]};
             for (int s=0; s<num_spheres; s++) {
                 if (hit_sphere(spheres[s], origin, direction, hit_point, hit_normal)) {
-                    printf("sphere casting shadow\n");
                     if (!intersected || squared_length(hit_point) < closest_dist) { // camera is at origin, so we can do length() directly
                         closest_is_sphere = 1;
                         closest_index = s;
@@ -231,6 +233,7 @@ void render(Vec3* intensities)
             for (int t=0; t<num_triangles; t++) {
                 if (hit_triangle(triangles[t], origin, direction, hit_point, hit_normal, hit_barycentric)) {
                     if (!intersected || squared_length(hit_point) < closest_dist) {
+                        printf("hit triangle\n");
                         closest_is_sphere = 0;
                         closest_index = t;
                         for (int k=0; k<3; k++) {   
@@ -251,7 +254,7 @@ void render(Vec3* intensities)
                 total_intensity.x = max(0.0, min(1.0, intensity[0]));
                 total_intensity.y = max(0.0, min(1.0, intensity[1]));
                 total_intensity.z = max(0.0, min(1.0, intensity[2]));
-                printf("%f %f %f\n", intensity[0], intensity[1], intensity[2]);
+                printf("i: %d, j: %d = %f %f %f\n", j, i, intensity[0], intensity[1], intensity[2]);
             } else {
                 total_intensity.x = 1.0;
                 total_intensity.y = 1.0;
