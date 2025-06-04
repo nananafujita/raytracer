@@ -1,6 +1,6 @@
 #define EPSILON 1e-6
-#define WIDTH 400
-#define HEIGHT 300
+#define WIDTH 1280
+#define HEIGHT 960
 #define FOV 60.0
 
 typedef struct Vec3 {

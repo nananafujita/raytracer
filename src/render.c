@@ -38,9 +38,122 @@ int hit_sphere(Sphere sphere, double origin[3], double direction[3], double hit_
     return 1;
 }
 
+
+double triangleArea(double a[3], double b[3], double c[3], int zeroCoord)
+{
+  if (zeroCoord == 0)   return 0.5 * (((b[1] - a[1]) * (c[2] - a[2])) - ((c[1] - a[1]) * (b[2] - a[2])));   // y-z plane
+  if (zeroCoord == 1)   return 0.5 * (((b[0] - a[0]) * (c[2] - a[2])) - ((c[0] - a[0]) * (b[2] - a[2])));   // x-z plane
+  if (zeroCoord == 2)   return 0.5 * (((b[0] - a[0]) * (c[1] - a[1])) - ((c[0] - a[0]) * (b[1] - a[1])));   // x-y plane
+  else {
+    printf("invalid zero coord.\n");
+    return 0.0;
+  }
+}
+
 // Ray-Plane intersection using the plane equation: ax_by+cz+d=0
-int hit_triangle(Triangle triangle, double origin[3], double direction[3], double hit_point[3], double triangle_normal[3], double barycentric[3]) {
-    // identify normal of the plane one which the triangle lies
+int hit_triangle(int idx, double origin[3], double direction[3], double hit_point[3], double triangle_normal[3], double barycentric[3]) {
+    
+    double v0v1[3];
+    subtract(triangles[idx].vertices[1].pos, triangles[idx].vertices[0].pos, v0v1);
+    double v0v2[3];
+    subtract(triangles[idx].vertices[2].pos, triangles[idx].vertices[0].pos, v0v2);
+    cross(v0v1, v0v2, triangle_normal);
+
+    double area = length(triangle_normal) / 2.0;
+    normalize(triangle_normal);
+
+    // Plane that triangle lies on
+    double a = triangle_normal[0];
+    double b = triangle_normal[1];
+    double c = triangle_normal[2];
+    double d = -dot(triangle_normal, triangles[idx].vertices[0].pos);
+
+    // Ray and Triangle are parallel (perpendicular to traingle normal)
+    if (fabs(dot(triangle_normal, direction)) < EPSILON) return 0;
+
+    // Intersection distance between camera and triangle
+    double t = -(dot(triangle_normal, origin) + d) / dot(triangle_normal, direction);
+    if (t <= 0 ) return 0;
+
+    // Ray 
+    double ray[3];
+    ray[0] = origin[0] + (direction[0] * t); 
+    ray[1] = origin[1] + (direction[1] * t); 
+    ray[2] = origin[2] + (direction[2] * t); 
+
+    // Inside-Outside Test
+    double AtoB[3];   subtract(triangles[idx].vertices[1].pos, triangles[idx].vertices[0].pos, AtoB);
+    double BtoC[3];   subtract(triangles[idx].vertices[2].pos, triangles[idx].vertices[1].pos, BtoC);
+    double CtoA[3];   subtract(triangles[idx].vertices[0].pos, triangles[idx].vertices[2].pos, CtoA);
+
+    double AtoRay[3];   subtract(ray, triangles[idx].vertices[0].pos, AtoRay);
+    double BtoRay[3];   subtract(ray, triangles[idx].vertices[1].pos, BtoRay);
+    double CtoRay[3];   subtract(ray, triangles[idx].vertices[2].pos, CtoRay);
+
+    double crossA[3];  cross(AtoB, AtoRay, crossA);   double dotAB = dot(crossA, triangle_normal);
+    double crossB[3];  cross(BtoC, BtoRay, crossB);   double dotBC = dot(crossB, triangle_normal);
+    double crossC[3];  cross(CtoA, CtoRay, crossC);   double dotCA = dot(crossC, triangle_normal);
+
+    if (dotAB < 0 || dotBC < 0 || dotCA < 0) return 0;
+
+    hit_point[0] = ray[0];  hit_point[1] = ray[1];  hit_point[2] = ray[2];
+
+    double u = dotBC;
+    double v = dotCA;
+    double denom = dot(triangle_normal, triangle_normal);
+    u /= denom;
+    v /= denom;
+
+    // Project onto X-Y plane unless perpendicular
+    int projectedZero = 2; // z = 0, project onto xy plane
+    while (fabs(triangle_normal[projectedZero] - 0.0) < EPSILON)
+    { projectedZero--; }
+    if (projectedZero < 0){
+        printf("invalid (<0) projected zero coordinate.\n");
+        return 0;
+    }
+
+    double projectedTriangle0[3];
+    double projectedTriangle1[3];
+    double projectedTriangle2[3];
+    double projectedIntersection[3];
+
+    for (int i=0; i<3; i++) {
+        if (i == projectedZero) {
+        projectedTriangle0[i] = 0.0;
+        projectedTriangle1[i] = 0.0;
+        projectedTriangle2[i] = 0.0;
+        projectedIntersection[i] = 0.0;
+        } else {
+        projectedTriangle0[i] = triangles[idx].vertices[0].pos[i];
+        projectedTriangle1[i] = triangles[idx].vertices[1].pos[i];
+        projectedTriangle2[i] = triangles[idx].vertices[2].pos[i];
+        projectedIntersection[i] = ray[i];
+        }
+    }
+
+    // Check clockwise/counter-clockwise orientation
+    int clockwise = 1;
+    double projected01[3];
+    double projected02[3];
+    for (int i=0; i<3; i++) {
+        projected01[i] = projectedTriangle1[i] - projectedTriangle0[i];
+        projected02[i] = projectedTriangle2[i] - projectedTriangle0[i];
+    }
+    double projectedCross[3];
+    cross(projected01, projected02, projectedCross);
+    if (projectedCross[projectedZero] < 0) clockwise = 0;
+
+    double triArea = triangleArea(projectedTriangle0, projectedTriangle1, projectedTriangle2, projectedZero);
+    double alpha = triangleArea(projectedIntersection, projectedTriangle1, projectedTriangle2, projectedZero) / triArea;
+    double beta = triangleArea(projectedTriangle0, projectedIntersection, projectedTriangle2, projectedZero) / triArea;
+    double gamma = triangleArea(projectedTriangle0, projectedTriangle1, projectedIntersection, projectedZero) / triArea;
+
+    barycentric[0] = alpha;
+    barycentric[1] = beta;
+    barycentric[2] = gamma;
+    return 1;
+    /*// identify normal of the plane one which the triangle lies
     double v01[3]; 
     subtract(triangle.vertices[1].pos, triangle.vertices[0].pos, v01);
     double v02[3]; 
@@ -81,7 +194,7 @@ int hit_triangle(Triangle triangle, double origin[3], double direction[3], doubl
             return 0;
     }
     
-    return 1;
+    return 1;*/
 }
 
 void define_pixel(int is_sphere, int idx, double hit_point[3], double hit_normal[3], double hit_barycentric[3], struct Pixel* p)
@@ -167,7 +280,7 @@ void apply_shadow(Pixel* p, double intensity[3])
             double obstacle_hit_point[3];
             double obstacle_normal[3];
             double obstacle_barycentric[3];
-            if (hit_triangle(triangles[t], p->pos, light_direction, obstacle_hit_point, obstacle_normal, obstacle_barycentric)){
+            if (hit_triangle(t, p->pos, light_direction, obstacle_hit_point, obstacle_normal, obstacle_barycentric)){
                 double hit_point_to_obstacle[3];
                 subtract(obstacle_hit_point, p->pos, hit_point_to_obstacle);
                 if (light_dist_squared - squared_length(hit_point_to_obstacle) > EPSILON) {
@@ -231,7 +344,7 @@ void render(Vec3* intensities)
                 }
             }
             for (int t=0; t<num_triangles; t++) {
-                if (hit_triangle(triangles[t], origin, direction, hit_point, hit_normal, hit_barycentric)) {
+                if (hit_triangle(t, origin, direction, hit_point, hit_normal, hit_barycentric)) {
                     if (!intersected || squared_length(hit_point) < closest_dist) {
                         printf("hit triangle\n");
                         closest_is_sphere = 0;
