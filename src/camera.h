@@ -1,8 +1,14 @@
-#ifndef RENDER_H
-#define RENDER_H
+#ifndef CAMERA_H
+#define CAMERA_H
 
 #include "scene.h"
 #include "macros.h"
+
+typedef struct {
+    double aspect_ratio = 16.0 / 9.0;
+    int image_width = 1280;
+    int samples = 100;
+} Camera;
 
 typedef struct Pixel {
     int is_sphere;

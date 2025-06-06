@@ -52,43 +52,6 @@ void draw(Vec3* intensities)
     drawn = 1;
 }
 
-GLuint draw_texture(Vec3* intensities)
-{
-    printf("generating texture...");
-    GLubyte* image_buffer = malloc(WIDTH * HEIGHT * 3);
-    for (int i=0; i<HEIGHT; i++) {
-        for (int j=0; j<WIDTH; j++) {
-            image_buffer[(i * WIDTH + j) * 3 + 0] = (GLubyte)intensities[i * WIDTH + j].x * 255.0;
-            image_buffer[(i * WIDTH + j) * 3 + 1] = (GLubyte)intensities[i * WIDTH + j].y * 255.0;
-            image_buffer[(i * WIDTH + j) * 3 + 2] = (GLubyte)intensities[i * WIDTH + j].z * 255.0;
-        }
-    }
-
-    GLuint tex;
-    glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, image_buffer);
-
-    free(image_buffer);
-    printf("done.\n");
-    return tex;
-}
-
-void display_texture(GLuint tex)
-{
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, tex);
-
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0f, 0.0f); glVertex2f(0, 0);
-    glTexCoord2f(1.0f, 0.0f); glVertex2f(WIDTH, 0);
-    glTexCoord2f(1.0f, 1.0f); glVertex2f(WIDTH, HEIGHT);
-    glTexCoord2f(0.0f, 1.0f); glVertex2f(0, HEIGHT);
-    glEnd();
-
-    glDisable(GL_TEXTURE_2D);
-}
-
 void key_callback(GLFWwindow* wind, int key, int scancode, int action, int mods) 
 {
     switch(key)
@@ -125,13 +88,10 @@ int main(int argc, char* argv[])
     init();
     Vec3* intensities = malloc(sizeof(Vec3) * WIDTH * HEIGHT);
     render(intensities); 
-    GLuint texture = draw_texture(intensities);
     draw(intensities);
     glfwSwapBuffers(window);
 
     while (!glfwWindowShouldClose(window)) {
-        //display_texture(texture);
-       // draw(intensities);
         glfwPollEvents(); 
     }
     free(intensities);

@@ -1,5 +1,10 @@
 #include "render.h"
 
+const double aspect_ratio = 16.0/9.0;
+const int image_width = 400;
+const double focal_length = 1.0;
+const double viewport_height = 2.0;
+
 // using analytic method of testing whether the ray and sphere intersect
 // direction must be normalized
 int hit_sphere(int idx, double origin[3], double direction[3], double hit_point[3], double hit_normal[3])
@@ -7,7 +12,7 @@ int hit_sphere(int idx, double origin[3], double direction[3], double hit_point[
     double origin_sphere[3];
     subtract(origin, spheres[idx].pos, origin_sphere);
 
-    // a = 1.0
+    // a = dot(direction, direction) = 1.0 because direction is normalized
     double b = 2.0 * dot(direction, origin_sphere);
     double c = dot(origin_sphere, origin_sphere) - pow(spheres[idx].radius, 2.0);
 
@@ -21,20 +26,22 @@ int hit_sphere(int idx, double origin[3], double direction[3], double hit_point[
     // sphere is behind ray
     if (t0 <= 0 && t1 <= 0) return 0;
 
+    // use closest t; check if camera is inside sphere
     double t_intersect = fmin(t0, t1);
     int normal_direction = 1;
-
     if (t_intersect <= 0) {
         t_intersect = fmax(t0, t1);
         normal_direction = -1;
     }
+
     multiply(direction, t_intersect, hit_point);
     add(origin, hit_point, hit_point);
 
+    // define hit normal: negate normal if camera is inside sphere
     subtract(hit_point, spheres[idx].pos, hit_normal);
     normalize(hit_normal);
+    multiply(hit_normal, normal_direction, hit_normal);
 
-    if (normal_direction < 0)  multiply(hit_normal, -1.0, hit_normal);
     return 1;
 }
 
@@ -230,7 +237,18 @@ void apply_shadow(Pixel* p, double intensity[3])
 
 void render(Vec3* intensities)
 {
-    printf("raytracing...");
+    /* TESTING
+    double origin[3] = {0, 0, 0};
+    double focal_length = 1.0;
+    int image_height = image_width / aspect_ratio;
+    image_height = (image_height < 1) ? 1 : image_height;
+    double viewport_width = viewport_height * ((double)image_height / (double)image_width);
+    double step_width = viewport_width / image_width;
+    double step_height = viewport_height / image_height;
+    double upper_left[3] = {-viewport_width/2, viewport_height/2, -focal_length};
+    double pixel00[3] = {upper_left[0] + 0.5 * step_width, upper_left[1] + 0.5 * step_height, upper_left[2]};
+    // ^^^^ TESTING */
+
     double origin[3] = {0, 0, 0};
     double half_angle = (FOV / 2) * M_PI / 180.0;                   // angle (in radians) between center and top of image plane
     double x = (float) WIDTH / (float) HEIGHT * tan(half_angle);    // half width of image plane
