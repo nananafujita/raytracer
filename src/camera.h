@@ -2,31 +2,25 @@
 #define CAMERA_H
 
 #include "scene.h"
-#include "macros.h"
+#include "vec3.h"
 
-typedef struct {
-    double aspect_ratio = 16.0 / 9.0;
+class Camera {
+public:
+    Camera() { origin = Vec3(); }
+    
+    double height() { return image_height; }
+    double width() { return image_width; }
+
+    void render(Vec3* intensities);
+private:
+    Vec3 origin;
     int image_width = 1280;
+    int image_height = 960;
     int samples = 100;
-} Camera;
+    double fov = 60.0;
 
-typedef struct Pixel {
-    int is_sphere;
-    int idx;
-    double pos[3];
-    double normal[3];
-    double color[3];
-    double diffuse[3];
-    double specular[3];
-    double bary[3];
-    double shininess;
-} Pixel;
-
-void render(Vec3* intensities);
-int hit_sphere(int idx, double origin[3], double direction[3], double hit_point[3], double hit_normal[3]);
-int hit_triangle(int idx, double origin[3], double direction[3], double hit_point[3], double triangle_normal[3], double barycentric[3]);
-void define_pixel(int is_sphere, int index, double hit_point[3], double hit_normal[3], double hit_barycentric[3], Pixel* pixel);
-void apply_shadow(Pixel* p, double intensity[3]);
-void calculate_intensity(Light* l, Pixel* p, double light_dir[3], double intensity[3]);
+    void apply_shadow(HitInfo& p, Vec3& intensity) const;
+    void calculate_intensity(const Light& l, HitInfo& hit, const Vec3& light_dir, Vec3& intensity) const;
+};
 
 #endif

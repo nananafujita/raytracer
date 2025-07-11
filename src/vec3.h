@@ -3,34 +3,53 @@
 
 class Vec3 {
 public:
-    double v[3];
-    Vec3() : v[0](0), v[1](0), v[2](0) {}
-    Vec3(double x, double y, double z) : v[0](x), v[1](y), v[2](z) {}
+    double x, y, z;
+    Vec3() : x(0), y(0), z(0) {};
+    Vec3(double _x, double _y, double _z) : x(_x), y(_y), z(_z) {};
+    //Vec3(Vec3& v) : x(v.x), y(v.y), z(v.z) {};
 
-    Vec3& operator+=(const Vec3& v);
-    Vec3& operator-=(const Vec3& v);
-    Vec3& operator*=(const double t);
-    Vec3& operator/=(const double t);
+    Vec3& operator+=(const Vec3& v) {
+        x += v.x; y+= v.y; z += v.z;
+        return *this;
+    };
+    Vec3& operator-=(const Vec3& v) {
+        x -= v.x; y-= v.y; z -= v.z;
+        return *this;
+    };
+    Vec3& operator*=(const double t) {
+        x *= t; y *= t; z *= t;
+        return *this;
+    };
+    Vec3& operator/=(const double t){
+        x /= t; y /= t; z /= t;
+        return *this;
+    };
+    Vec3 operator-() const { return Vec3(-x, -y, -z); }
 };
 
-inline Vec3 operator-(const Vec3& a, const Vec3& b) {
-    return Vec3(a.v[0] - b.v[0], a.v[1] - b.v[1], a.v[2] - b.v[2]);
+inline Vec3 operator-(const Vec3& v, const Vec3& u) {
+    return Vec3(v.x - u.x, v.y - u.y, v.z - u.z);
 }
 
-inline Vec3 operator+(const Vec3& a, const Vec3& b) {
-    return Vec3(a.v[0] + b.v[0], a.v[1] + b.v[1], a.v[2] + b.v[2]);
+inline Vec3 operator+(const Vec3& v, const Vec3& u) {
+    return Vec3(v.x + u.x, v.y + u.y, v.z + u.z);
 }
 
 inline Vec3 operator*(const Vec3& v, const double t) {
-    return Vec3(v.v[0] * t, v.v[1] * t, v.v[2] * t);
+    return Vec3(v.x * t, v.y * t, v.z * t);
+}
+
+// component-wise multiplication
+inline Vec3 operator*(const Vec3& v, const Vec3& u) {
+    return Vec3(v.x * u.x, v.y * u.y, v.z * u.z);
 }
 
 inline Vec3 operator/(const Vec3& v, const double t) {
-    return Vec3(v.v[0] / t, v.v[1] / t, v.v[2] / t);
+    return Vec3(v.x / t, v.y / t, v.z / t);
 }
 
 inline double squared_length(const Vec3& v) {
-    return a.v[0] * a.v[0] + a.v[1] * a.v[1] + a.v[2] * a.v[2];
+    return v.x * v.x + v.y * v.y + v.z * v.z;
 }
 
 inline double length(const Vec3& v) {
@@ -41,29 +60,21 @@ inline void normalize(Vec3& v) {
     v /= length(v);
 }
 
-inline double dot(const Vec3& a, const Vec3& b) {
-    return a.v[0]* b.v[0] + a.v[1] * b.v[1] + a.v[2] * b.v[2];
+inline double dot(const Vec3& v, const Vec3& u) {
+    return v.x* u.x + v.y * u.y + v.z * u.z;
 }
 
-inline Vec3 cross(const Vec3& a, const Vec3& b) {
-    return Vec3(a.v[1] * b.v[2] - a.v[2] * b.v[1],
-                a.v[2] * b.v[0] - a.v[0] * b.v[2],
-                a.v[0] * b.v[1] - a.v[1] * b.v[0]);
+inline Vec3 cross(const Vec3& v, const Vec3& u) {
+    return Vec3(v.y * u.z - v.z * u.y,
+                v.z * u.x - v.x * u.z,
+                v.x * u.y - v.y * u.x);
 }
 
-inline double max(const double a, const double b) {
-    return (a > b) ? a : b;
-}
-
-inline double min(const double a, const double b) {
-    return (a < b) ? a : b;
-}
-
-inline Vec3 interpolate(const Vec3& bary, const Vec3& a, const Vec3& b, const Vec3& c) {
-    double u[3] = a * bary[0];
-    double v[3] = b * bary[1];
-    double w[3] = c * bary[2];
-    return u + v + w;
+inline Vec3 interpolate(const Vec3& bary, const Vec3& v, const Vec3& u, const Vec3& w) {
+    Vec3 a = v * bary.x;
+    Vec3 b = u * bary.y;
+    Vec3 c = w * bary.z;
+    return a + b + c;
 }
 
 

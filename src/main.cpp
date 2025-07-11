@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    if (load_scene(argv[1]) != 0) {
+    if (Scene::instance().load_scene(argv[1]) != 0) {
         fprintf(stderr, "Error when parsing file. See above comments for details.\n");
         return -1;
     }
@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
     glfwSetKeyCallback(window, key_callback);
 
     init();
-    Vec3* intensities = malloc(sizeof(Vec3) * WIDTH * HEIGHT);
+    Vec3* intensities = (Vec3*)malloc(sizeof(Vec3) * WIDTH * HEIGHT);
     render(intensities); 
     draw(intensities);
     glfwSwapBuffers(window);
