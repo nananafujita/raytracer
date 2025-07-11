@@ -5,12 +5,6 @@ Features:
 - Phong shading
 - Anti-aliasing
 
-Sample output:
-
+Sample output:\n
 ![Sample output image of a series of spheres](sampleOutput2.jpg)
 ![Sample output image of a snowman made of spheres and triangles](sampleOutput1.jpg)
-
-mkdir build
-cmake ..
-make 
-.raytracer model/
