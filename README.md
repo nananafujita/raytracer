@@ -6,7 +6,8 @@ Features:
 - Anti-aliasing
 
 Sample output:
-
+![Sample output image of a series of spheres][sampleOuput1.jpg]
+![Sample output image of a snowman made of spheres and triangles][sampleOuput2.jpg]
 
 mkdir build
 cmake ..
