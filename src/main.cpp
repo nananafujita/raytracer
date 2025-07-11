@@ -5,8 +5,9 @@
 
 #include "camera.h"
 
-int drawn = 0;
+int drawn = 0; // flag to make sure rendering only happens once
 
+// initializes OpenGL settings
 void init()
 {
   glMatrixMode(GL_PROJECTION);
@@ -18,45 +19,44 @@ void init()
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
+// plots single pixel as a point using rgb
 void plot_pixel(int x, int y, unsigned char r, unsigned char g, unsigned char b)
 {
+  // normalize color to [0.0, 1.0]
   glColor3f(((float)r) / 255.0f, ((float)g) / 255.0f, ((float)b) / 255.0f);
   glVertex2i(x,y);
 }
 
+// loop through viewport and draw image from 2d array of colors
 void draw(Vec3* intensities)
 {
     if (!drawn) {
         for(unsigned int i=0; i<HEIGHT; i++)
         {
             glPointSize(2.0);  
-            // Do not worry about this usage of OpenGL. This is here just so that we can draw the pixels to the screen,
-            // after their R,G,B colors were determined by the ray tracer.
             glBegin(GL_POINTS);
             for(unsigned int j=0; j<WIDTH; j++)
             {
-            // A simple R,G,B output for testing purposes.
-            // Modify these R,G,B colors to the values computed by your ray tracer.
-            unsigned char r = fabs(intensities[i * WIDTH + j].x) * 255.0;
-            unsigned char g = fabs(intensities[i * WIDTH + j].y) * 255.0;
-            unsigned char b = fabs(intensities[i * WIDTH + j].z) * 255.0;
-
-            plot_pixel(j, i, r, g, b);
+              unsigned char r = fabs(intensities[i * WIDTH + j].x) * 255.0;
+              unsigned char g = fabs(intensities[i * WIDTH + j].y) * 255.0;
+              unsigned char b = fabs(intensities[i * WIDTH + j].z) * 255.0;
+  
+              plot_pixel(j, i, r, g, b);
             }
-            glEnd();
-            glFlush();
+            glEnd();    
+            glFlush();  
         }
         printf("Ray tracing completed.\n"); 
         fflush(stdout);
     }
-    drawn = 1;
+    drawn = 1;  // prevent redrawing image
 }
 
 void key_callback(GLFWwindow* wind, int key, int scancode, int action, int mods) 
 {
     switch(key)
     {
-        case 256:
+        case 256:     // ESC
             exit(0);
             break;
     }
@@ -82,10 +82,11 @@ int main(int argc, char* argv[])
     }
 
     glfwMakeContextCurrent(window);
-
     glfwSetKeyCallback(window, key_callback);
 
     init();
+
+    // stores pixel colors (intensities) in a 1d array
     Vec3* intensities = (Vec3*)malloc(sizeof(Vec3) * WIDTH * HEIGHT);
     render(intensities); 
     draw(intensities);
